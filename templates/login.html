@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}ChapStream | Login{% end %}
+{% block custom_css %}/static/css/login.css{% end %}
+{% block content_container %}
+<div class="container">
+
+  <form class="form-signin" action="/login" method="POST">
+    <h2 class="form-signin-heading">Please sign in</h2>
+    <input type="text" class="form-control" placeholder="Username" name="name" required autofocus>
+    <input type="password" class="form-control" placeholder="Password" name="password" required>
+    <label class="checkbox">
+      <input type="checkbox" value="remember-me" value="remember_me"> Remember me
+    </label>
+    <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+  </form>
+
+</div> <!-- /container -->
+{% end %}
