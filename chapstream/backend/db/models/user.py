@@ -3,7 +3,7 @@ from datetime import datetime
 
 from sqlalchemy import Column, Integer, String, DateTime, Boolean, UnicodeText
 
-from chapstream.db import Base
+from chapstream.backend.db import Base
 
 
 class User(Base):
