@@ -1,7 +1,7 @@
 TODO
 ====
 
-* Use Vagrant or Docker for development environment. Probably Docker.
+* Use salt for configuration management.
 * Design SQL tables for posts, likes and comments.
 * Design and implement a backend for distributed 
   timeline using Redis and Kuyruk.
