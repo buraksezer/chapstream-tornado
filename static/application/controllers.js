@@ -13,4 +13,6 @@ ChapStreamControllers.controller('ContentCtrl', ['$scope', '$http',
 ChapStreamControllers.controller('TimelineCtrl', ['$scope', '$http',
   function TimelineCtrl($scope, $http) {
     console.log("This is your timeline controller.");
-  }]);
+  }
+
+]);

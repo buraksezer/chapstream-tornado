@@ -1,10 +1,12 @@
 import hashlib
 from datetime import datetime
 
-from sqlalchemy import Column, Integer, String, DateTime, Boolean, UnicodeText
+from sqlalchemy import Column, Integer, \
+                String, DateTime, Boolean, UnicodeText
+from sqlalchemy.orm import relationship
 
 from chapstream.backend.db import Base
-
+from chapstream.backend.db.models.posts import Post
 
 class User(Base):
     __tablename__ = 'users'
@@ -20,9 +22,11 @@ class User(Base):
     bio = Column(UnicodeText, nullable=True)
     sign_up_date = Column(DateTime, default=datetime.utcnow())
     last_seen = Column(DateTime, default=datetime.utcnow())
+    posts = relationship("Post", backref='user')
 
     def __repr__(self):
-        return "<User('%s', '%s', '%s')>" % (self.id, self.name, self.email)
+        return "<User('%s', '%s', '%s')>" % \
+                (self.id, self.name, self.email)
 
     def authenticate(self, password):
         secret = password+self.salt
