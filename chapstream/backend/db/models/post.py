@@ -3,7 +3,7 @@ from sqlalchemy import Column, Integer, \
 from sqlalchemy import func
 
 from chapstream.backend.db import Base
-
+from chapstream.backend.db.models.user import User
 
 class Post(Base):
     __tablename__ = 'posts'
@@ -13,7 +13,8 @@ class Post(Base):
     is_draft = Column(Boolean, default=False)
     created_at = Column(DateTime, default=func.current_timestamp())
     updated_at = Column(DateTime, onupdate=func.current_timestamp())
-    user_id = Column(Integer, ForeignKey('users.id'))
+    user_id = Column(Integer, ForeignKey(User.id))
 
     def __repr__(self):
-        return "<Post('%s')>" % self.id
+        return "<Post(id: '%s', user_id: '%s')>" % \
+                (self.id, self.user_id)

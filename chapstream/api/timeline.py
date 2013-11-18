@@ -1,7 +1,12 @@
+import json
+
 import tornado.web
 
 from chapstream.api import CsRequestHandler
 from chapstream.api import CsWebSocketHandler
+from chapstream.backend.db import session
+from chapstream.backend.db.models.user import User
+from chapstream.backend.db.models.post import Post
 
 
 class TimelineHandler(CsWebSocketHandler):
@@ -23,4 +28,9 @@ class TimelineHandler(CsWebSocketHandler):
 class SendPostHandler(CsRequestHandler):
     @tornado.web.authenticated
     def post(self):
-        print "burda"
+        # TODO: Catch exceptions
+        data = json.loads(self.request.body)
+        user = session.query(User).filter_by(name=self.current_user).first()
+        new_post = Post(body=data["body"], user_id=user.id)
+        session.add(new_post)
+        session.commit()
