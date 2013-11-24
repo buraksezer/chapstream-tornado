@@ -10,7 +10,6 @@ from chapstream.backend.db import session
 from chapstream.backend.db.models.user import User
 
 
-
 class ProfileHandler(CsRequestHandler):
     @tornado.web.authenticated
     def get(self):

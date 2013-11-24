@@ -31,3 +31,16 @@ class User(Base):
     def authenticate(self, password):
         secret = password+self.salt
         return self.hash == hashlib.sha512(secret).hexdigest()
+
+
+class UserRelation(Base):
+    __tablename__ = 'user_relations'
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, nullable=False)
+    chap_id = Column(Integer, nullable=False)
+    is_banned = Column(Boolean, default=False)
+
+    def __repr__(self):
+        return "<UserRelation('%s user:%s, chap:%s)" % \
+               (self.id, self.user_id, self.chap_id)
