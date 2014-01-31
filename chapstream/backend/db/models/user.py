@@ -1,8 +1,9 @@
 import hashlib
 from datetime import datetime
 
-from sqlalchemy import Column, Integer, \
-                String, DateTime, Boolean, UnicodeText
+from sqlalchemy import Column, Integer,\
+    String, DateTime, Boolean, UnicodeText, Sequence, \
+    BigInteger
 from sqlalchemy.orm import relationship
 
 from chapstream.backend.db import Base
@@ -11,7 +12,8 @@ from chapstream.backend.db import Base
 class User(Base):
     __tablename__ = 'users'
 
-    id = Column(Integer, primary_key=True)
+    id = Column(BigInteger, Sequence(
+        'seq_user_id', start=1, increment=1), primary_key=True)
     name = Column(String, nullable=False)
     fullname = Column(String)
     email = Column(String, nullable=False)
@@ -36,7 +38,8 @@ class User(Base):
 class UserRelation(Base):
     __tablename__ = 'user_relations'
 
-    id = Column(Integer, primary_key=True)
+    id = Column(BigInteger, Sequence(
+        'seq_user_relation_id', start=1, increment=1), primary_key=True)
     user_id = Column(Integer, nullable=False)
     chap_id = Column(Integer, nullable=False)
     is_banned = Column(Boolean, default=False)

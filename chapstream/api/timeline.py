@@ -1,4 +1,5 @@
 import json
+import logging
 
 import tornado.web
 
@@ -8,6 +9,7 @@ from chapstream.backend.db import session
 from chapstream.backend.db.models.user import User
 from chapstream.backend.db.models.post import Post
 
+logger = logging.getLogger(__name__)
 
 class TimelineHandler(CsWebSocketHandler):
     @tornado.web.authenticated
@@ -28,7 +30,7 @@ class TimelineHandler(CsWebSocketHandler):
 class SendPostHandler(CsRequestHandler):
     @tornado.web.authenticated
     def post(self):
-        # TODO: Catch exceptions
+        logger.info('Creating a new post by %s', self.current_user)
         data = json.loads(self.request.body)
         user = session.query(User).filter_by(name=self.current_user).first()
         new_post = Post(body=data["body"], user_id=user.id)

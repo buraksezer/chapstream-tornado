@@ -6,7 +6,7 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 chapstream_engine = create_engine(
                        "postgresql://csdbuser:hadron@localhost/csdatabase",
                        convert_unicode=True,
-                       echo=True # debug mode
+                       echo=False # debug mode
 )
 session = scoped_session(sessionmaker(bind=chapstream_engine))
 Base = declarative_base()
