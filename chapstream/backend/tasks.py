@@ -10,9 +10,6 @@ logger = logging.getLogger(__name__)
 
 kuyruk = Kuyruk(task_queue)
 
-
-
-
 @kuyruk.task
 def post_timeline(body, channel):
     connection = tornadoredis.Client()
