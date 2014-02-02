@@ -6,6 +6,7 @@ from sqlalchemy import Column, Integer, \
 from chapstream.backend.db.models.user import User
 from chapstream.backend.db import Base
 
+
 class Post(Base):
     __tablename__ = 'posts'
 

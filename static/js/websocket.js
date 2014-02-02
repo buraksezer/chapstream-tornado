@@ -1,8 +1,8 @@
-var ws = new WebSocket("ws://127.0.0.1:8000/timeline-socket");
+var ws = new WebSocket("ws://127.0.0.1:8080/timeline-socket");
 ws.open = function() {
-    ws.send("Hello, world");
+    console.log('actim');
 };
 
 ws.onmessage = function(e) {
-    console.log(e.data);
+    alert(e.data);
 }
