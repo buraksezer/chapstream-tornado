@@ -61,5 +61,4 @@ class SendPostHandler(CsRequestHandler):
         session.commit()
 
         # Send a task to write follower's timelines and realtime push
-        channel = str(self.current_user.id) + '_channel'
-        post_timeline(data['body'], channel)
+        post_timeline(data['body'], new_post.id, self.current_user.id)

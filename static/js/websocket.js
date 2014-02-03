@@ -4,5 +4,5 @@ ws.open = function() {
 };
 
 ws.onmessage = function(e) {
-    alert(e.data);
+    console.log(e.data);
 }
