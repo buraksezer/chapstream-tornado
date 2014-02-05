@@ -4,6 +4,7 @@ from chapstream.api.user import LoginHandler
 from chapstream.api.user import LogoutHandler
 from chapstream.api.user import RegisterHandler
 from chapstream.api.timeline import TimelineHandler
+from chapstream.api.timeline import TimelineLoader
 from chapstream.api.timeline import SendPostHandler
 
 
@@ -14,5 +15,6 @@ URLS = [
     (r"/logout", LogoutHandler),
     (r"/register", RegisterHandler),
     (r"/timeline-socket", TimelineHandler),
-    (r"/send-post", SendPostHandler)
+    (r"/send-post", SendPostHandler),
+    (r"/load-timeline", TimelineLoader)
 ]

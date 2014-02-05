@@ -1,5 +1,10 @@
 <div id="chapstream-timeline">
     <form role="form">
-        <textarea class="form-control" rows="3" send-post></textarea>
+        <textarea class="form-control" rows="2" send-post></textarea>
     </form>
+    <div id="posts">
+        <div class="post" ng-repeat="post in posts">
+            <p>{{ post.body }}</p>
+        </div>
+    </div>
 </div>

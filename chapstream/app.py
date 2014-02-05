@@ -5,7 +5,7 @@ import tornado.options
 import tornado.autoreload
 
 from chapstream.urls import URLS
-from chapstream.config import settings
+from chapstream.config import tornado_server_settings
 from chapstream.backend.db import session
 
 
@@ -19,11 +19,11 @@ class Application(tornado.web.Application):
 
         # Watch templates
         for element in ("template_path", "static_path"):
-            for (path, dirs, files) in os.walk(settings[element]):
+            for (path, dirs, files) in os.walk(tornado_server_settings[element]):
                 for item in files:
                     tornado.autoreload.watch(os.path.join(path, item))
 
-        tornado.web.Application.__init__(self, URLS, **settings)
+        tornado.web.Application.__init__(self, URLS, **tornado_server_settings)
 
         # global database connection
         self.db = session

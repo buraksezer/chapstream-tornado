@@ -3,9 +3,10 @@
 /* App Module */
 
 var app = angular.module('ChapStream', [
-  'ngRoute',
-  'ChapStreamControllers',
-  'ChapStreamDirectives'
+    'ChapStreamServices',
+    'ngRoute',
+    'ChapStreamControllers',
+    'ChapStreamDirectives'
 ]);
 
 app.config(['$routeProvider',
@@ -19,8 +20,22 @@ app.config(['$routeProvider',
     ]).
     config(['$httpProvider',
         function($httpProvider) {
-            console.log("burda");
             var _xsrf = $('input[name=_xsrf]').val();
             $httpProvider.defaults.headers.post['X-CSRFToken'] = _xsrf;
         }
     ]);
+
+
+app.run(function($rootScope, InitService) {
+    InitService.realtime();
+    $rootScope.safeApply = function(fn) {
+        var phase = this.$root.$$phase;
+        if(phase == '$apply' || phase == '$digest') {
+            if(fn && (typeof(fn) === 'function')) {
+                fn();
+            }
+        } else {
+            this.$apply(fn);
+        }
+    };
+});

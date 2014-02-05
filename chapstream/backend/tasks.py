@@ -1,3 +1,4 @@
+import json
 import logging
 
 import redis
@@ -33,6 +34,7 @@ def post_timeline(body, post_id, user_id):
                 'body': body,
                 'post_id': post_id
             }
+            post = json.dumps(post)
             # Push user's timeline the current post
             redis_conn.rpush(timeline, post)
             # TODO: Check size of the list and rotate it if

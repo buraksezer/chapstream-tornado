@@ -12,6 +12,14 @@ ChapStreamControllers.controller('ContentCtrl', ['$scope', '$http',
 
 ChapStreamControllers.controller('TimelineCtrl', ['$scope', '$http',
   function TimelineCtrl($scope, $http) {
+    $http.get('/load-timeline').success(
+        function(data, status) {
+            $scope.safeApply(function() {
+                $scope.posts = data;
+                console.log($scope.posts);
+            });
+        }
+    );
     console.log("This is your timeline controller.");
   }
 
