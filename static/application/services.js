@@ -12,7 +12,8 @@ angular.module('ChapStreamServices', []).factory('InitService', function() {
             };
 
             ws.onmessage = function(e) {
-                console.log(e.data);
+                var data = jQuery.parseJSON(e.data);
+                $("#new-post").trigger("new_post_event", {new_entry: data});
             }
         }
     }

@@ -82,7 +82,8 @@ class TimelineLoader(CsRequestHandler):
         posts.reverse()
         # We process all items of the list because
         # redis returns a raw string instead of a python object.
-        for index in xrange(0, length):
+        for index in xrange(0, len(posts)):
+            logger.info(index)
             post = posts[index]
             posts[index] = json.loads(post)
         posts = json.dumps(posts)

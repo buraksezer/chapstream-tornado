@@ -28,6 +28,8 @@ app.config(['$routeProvider',
 
 app.run(function($rootScope, InitService) {
     InitService.realtime();
+
+    /* Updates model on the fly */
     $rootScope.safeApply = function(fn) {
         var phase = this.$root.$$phase;
         if(phase == '$apply' || phase == '$digest') {
