@@ -16,11 +16,9 @@ ChapStreamControllers.controller('TimelineCtrl', ['$scope', '$http',
         function(data, status) {
             $scope.safeApply(function() {
                 $scope.posts = data;
-                console.log($scope.posts);
             });
         }
     );
-    console.log("This is your timeline controller.");
   }
 
 ]);

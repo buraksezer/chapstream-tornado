@@ -13,7 +13,7 @@ angular.module('ChapStreamServices', []).factory('InitService', function() {
 
             ws.onmessage = function(e) {
                 var data = jQuery.parseJSON(e.data);
-                $("#new-post").trigger("new_post_event", {new_entry: data});
+                $('#new-post, #posts').trigger("new_post_event", data);
             }
         }
     }
