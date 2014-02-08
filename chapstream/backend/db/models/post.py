@@ -4,7 +4,7 @@ from sqlalchemy import Column, Integer, \
     Sequence, BigInteger
 
 from chapstream.backend.db.models.user import User
-from chapstream.backend.db import Base
+from chapstream.backend.db.orm import Base
 
 
 class Post(Base):

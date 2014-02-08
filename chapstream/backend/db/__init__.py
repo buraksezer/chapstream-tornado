@@ -1,5 +1,6 @@
+from contextlib import contextmanager
+
 from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker
 
 # These parameters should be defined in a config module
@@ -10,7 +11,12 @@ chapstream_engine = create_engine(
                        echo=False # debug mode
 )
 session = scoped_session(sessionmaker(bind=chapstream_engine))
-Base = declarative_base()
 
-def init_db(engine):
-  Base.metadata.create_all(bind=engine)
+@contextmanager
+def new_session():
+    session = sessionmaker(bind=chapstream_engine)
+    try:
+        yield session
+    finally:
+        session.close()
+

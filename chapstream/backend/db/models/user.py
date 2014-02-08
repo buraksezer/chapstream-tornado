@@ -6,7 +6,7 @@ from sqlalchemy import Column, Integer,\
     BigInteger
 from sqlalchemy.orm import relationship
 
-from chapstream.backend.db import Base
+from chapstream.backend.db.orm import Base
 
 
 class User(Base):
