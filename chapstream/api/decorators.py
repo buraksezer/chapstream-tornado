@@ -15,3 +15,14 @@ def not_authenticated(method):
         raise HTTPError(403)
 
     return wrapper
+
+
+def api_response(method):
+    """
+    Process the result of API endpoints
+    """
+    @functools.wraps(method)
+    def wrapper(self, *args, **kwargs):
+        result = method(self, *args, **kwargs)
+        return self.write(result)
+    return wrapper

@@ -1,19 +1,50 @@
 import uuid
+import logging
 import hashlib
+import calendar
 
 import tornado
 import tornado.web
 
+from chapstream import config
 from chapstream.api import decorators
-from chapstream.api import CsRequestHandler
+from chapstream.api import CsRequestHandler,process_response
 from chapstream.backend.db import session
 from chapstream.backend.db.models.user import User
+from chapstream.backend.db.models.post import Post
+
+logger = logging.getLogger(__name__)
 
 
 class ProfileHandler(CsRequestHandler):
     @tornado.web.authenticated
-    def get(self):
-        self.write("This is your profile")
+    @decorators.api_response
+    def get(self, username):
+        user = session.query(User).filter_by(name=username).first()
+        if not user:
+            result = process_response(
+                message="%s could not be found." % username,
+                status=config.API_ERROR
+            )
+        else:
+            posts = Post.query.filter_by(user_id=user.id)\
+                .limit(config.TIMELINE_BULK_LENGTH).all()
+            posts_processed = {}
+            for post in posts:
+                created_at = calendar.timegm(post.created_at.utctimetuple())
+                posts_processed[post.id] = {
+                    "body": post.body,
+                    "created_at": created_at
+                }
+            data = {
+                "user": {
+                    "name": user.name,
+                    "fullname": user.fullname
+                },
+                "posts": posts_processed,
+            }
+            result = process_response(data=data, status=config.API_OK)
+        return result
 
 
 class LoginHandler(CsRequestHandler):

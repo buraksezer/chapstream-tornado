@@ -11,3 +11,8 @@ tornado_server_settings = dict(
 )
 
 TIMELINE_BULK_LENGTH = 15
+
+# API request status
+API_OK = "OK"
+API_ERROR = "ERROR"
+API_FAIL = "FAIL"

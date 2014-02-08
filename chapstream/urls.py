@@ -10,11 +10,11 @@ from chapstream.api.timeline import SendPostHandler
 
 URLS = [
     (r"/", MainHandler),
-    (r"/profile", ProfileHandler),
     (r"/login", LoginHandler),
     (r"/logout", LogoutHandler),
     (r"/register", RegisterHandler),
     (r"/timeline-socket", TimelineHandler),
     (r"/send-post", SendPostHandler),
-    (r"/load-timeline", TimelineLoader)
+    (r"/load-timeline", TimelineLoader),
+    (r"/(?P<username>[^\/]+)", ProfileHandler) # This should be at the end of the list
 ]
