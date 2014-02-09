@@ -10,9 +10,14 @@ tornado_server_settings = dict(
     login_url = "/login"
 )
 
-TIMELINE_BULK_LENGTH = 15
+TIMELINE_CHUNK_LENGTH = 15
 
 # API request status
 API_OK = "OK"
 API_ERROR = "ERROR"
 API_FAIL = "FAIL"
+
+# Redis Configuration
+REDIS_HOST = "localhost"
+REDIS_PORT = 6379
+REDIS_PASSWORD = None

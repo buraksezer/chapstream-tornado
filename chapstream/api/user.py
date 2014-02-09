@@ -8,8 +8,7 @@ import tornado.web
 
 from chapstream import config
 from chapstream.api import decorators
-from chapstream.api import CsRequestHandler,process_response
-from chapstream.backend.db import session
+from chapstream.api import CsRequestHandler, process_response
 from chapstream.backend.db.models.user import User
 from chapstream.backend.db.models.post import Post
 
@@ -20,7 +19,7 @@ class ProfileHandler(CsRequestHandler):
     @tornado.web.authenticated
     @decorators.api_response
     def get(self, username):
-        user = session.query(User).filter_by(name=username).first()
+        user = self.session.query(User).filter_by(name=username).first()
         if not user:
             result = process_response(
                 message="%s could not be found." % username,
@@ -28,7 +27,7 @@ class ProfileHandler(CsRequestHandler):
             )
         else:
             posts = Post.query.filter_by(user_id=user.id)\
-                .limit(config.TIMELINE_BULK_LENGTH).all()
+                .limit(config.TIMELINE_CHUNK_LENGTH).all()
             posts_processed = {}
             for post in posts:
                 created_at = calendar.timegm(post.created_at.utctimetuple())
@@ -56,7 +55,7 @@ class LoginHandler(CsRequestHandler):
         name = self.get_argument("name")
         password = self.get_argument("password")
 
-        user = session.query(User).filter_by(name=name).first()
+        user = self.session.query(User).filter_by(name=name).first()
         if not user:
             # TODO: Use flash messages to handle that
             self.write("Invalid user name.")
@@ -93,11 +92,11 @@ class RegisterHandler(CsRequestHandler):
         password = self.get_argument("password")
 
         # TODO: We should use flash messages to handle these conditions
-        mail_in_use = session.query(User).filter_by(email=email).first()
+        mail_in_use = self.session.query(User).filter_by(email=email).first()
         if mail_in_use:
             self.write("%s is already in use." % email)
             return
-        name_taken = session.query(User).filter_by(name=name).first()
+        name_taken = self.session.query(User).filter_by(name=name).first()
         if name_taken:
             self.write("%s is already taken by someone else." % name)
             return
@@ -106,8 +105,8 @@ class RegisterHandler(CsRequestHandler):
         salt = unicode(uuid.uuid4().hex)
         hash = hashlib.sha512(password + salt).hexdigest()
         new_user = User(name=name, hash=hash, email=email, salt=salt)
-        session.add(new_user)
-        session.commit()
+        self.session.add(new_user)
+        self.session.commit()
 
         # TODO: Use a seperated page to show after registering for marketing
         self.write("Congurulations!")

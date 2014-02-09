@@ -2,7 +2,6 @@ from tornado.web import RequestHandler
 from tornado.websocket import WebSocketHandler
 
 from chapstream.config import API_OK
-from chapstream.backend.db import session
 from chapstream.backend.db.models.user import User
 
 
@@ -14,7 +13,15 @@ class CsRequestHandler(RequestHandler):
     @property
     def current_user(self):
         name = self.get_secure_cookie("user")
-        return session.query(User).filter_by(name=name).first()
+        return self.session.query(User).filter_by(name=name).first()
+
+    @property
+    def session(self):
+        return self.application.session
+
+    @property
+    def redis_conn(self):
+        return self.application.redis_conn
 
 
 class CsWebSocketHandler(WebSocketHandler):
@@ -25,7 +32,11 @@ class CsWebSocketHandler(WebSocketHandler):
     @property
     def current_user(self):
         name = self.get_secure_cookie("user")
-        return session.query(User).filter_by(name=name).first()
+        return self.session.query(User).filter_by(name=name).first()
+
+    @property
+    def session(self):
+        return self.application.session
 
 
 def process_response(data=None, status=API_OK, message=None):

@@ -1,9 +1,11 @@
 import os
+import redis
 
 import tornado.web
 import tornado.options
 import tornado.autoreload
 
+from chapstream import config
 from chapstream.urls import URLS
 from chapstream.config import tornado_server_settings
 from chapstream.backend.db import session
@@ -25,5 +27,11 @@ class Application(tornado.web.Application):
 
         tornado.web.Application.__init__(self, URLS, **tornado_server_settings)
 
-        # global database connection
-        self.db = session
+        # global SQLAlchemy connection
+        self.session = session
+
+        # global Redis connection
+        self.redis_conn = redis.Redis(
+            host=config.REDIS_HOST,
+            port=config.REDIS_PORT
+        )
