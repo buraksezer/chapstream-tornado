@@ -15,7 +15,7 @@ ChapStreamDirectives.directive('sendPost', function($http) {
                 scope.inProgress = true;
                 var form = $("#post-form")
                 var post = form.val().trim();
-                $http.post('/send-post', {body: post}).success(
+                $http.post('/api/timeline/send-post', {body: post}).success(
                     function(data, status) {
                         if (status === 200){
                             form.val('');

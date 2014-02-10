@@ -2,6 +2,8 @@
 
 /* App Module */
 
+var TEMPLATE_ROOT = "/static/application/templates";
+
 var app = angular.module('ChapStream', [
     'ChapStreamServices',
     'ngRoute',
@@ -13,8 +15,12 @@ app.config(['$routeProvider',
     function($routeProvider) {
         $routeProvider.
         when('/', {
-            templateUrl: '/static/application/templates/content.html',
+            templateUrl: TEMPLATE_ROOT+'/content.html',
             controller: 'ContentCtrl'
+        }).
+        when("/:username", {
+            templateUrl: TEMPLATE_ROOT+'/profile.html',
+            controller: 'ProfileCtrl'
         });
     }
     ]).
@@ -23,8 +29,9 @@ app.config(['$routeProvider',
             var _xsrf = $('input[name=_xsrf]').val();
             $httpProvider.defaults.headers.post['X-CSRFToken'] = _xsrf;
         }
-    ]);
-
+    ]).config(["$locationProvider", function($locationProvider) {
+        $locationProvider.html5Mode(true);
+    }]);
 
 app.run(function($rootScope, InitService) {
     InitService.realtime();
