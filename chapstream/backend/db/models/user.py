@@ -20,6 +20,7 @@ class User(Base):
     salt = Column(String, nullable=False)
     hash = Column(String, nullable=False)
     is_admin = Column(Boolean, default=False)
+    # TODO: rename this: is_private
     is_hidden = Column(Boolean, default=False)
     bio = Column(UnicodeText, nullable=True)
     sign_up_date = Column(DateTime, default=datetime.utcnow())

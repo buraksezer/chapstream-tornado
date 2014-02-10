@@ -1,5 +1,9 @@
-from chapstream.api.misc import MainHandler
-from chapstream.api.user import ProfileHandler
+# Frontend Handlers
+from chapstream.frontend import MainHandler
+from chapstream.frontend import ProfileHandler
+
+# API Handlers
+from chapstream.api.user import UserHandler
 from chapstream.api.user import LoginHandler
 from chapstream.api.user import LogoutHandler
 from chapstream.api.user import RegisterHandler
@@ -7,14 +11,22 @@ from chapstream.api.timeline import TimelineHandler
 from chapstream.api.timeline import TimelineLoader
 from chapstream.api.timeline import SendPostHandler
 
-
-URLS = [
+FRONTEND_URLS = [
     (r"/", MainHandler),
     (r"/login", LoginHandler),
     (r"/logout", LogoutHandler),
     (r"/register", RegisterHandler),
-    (r"/timeline-socket", TimelineHandler),
-    (r"/send-post", SendPostHandler),
-    (r"/load-timeline", TimelineLoader),
     (r"/(?P<username>[^\/]+)", ProfileHandler) # This should be at the end of the list
 ]
+
+API_URLS = [
+    (r"/api/timeline/load-timeline", TimelineLoader),
+    (r"/api/timeline/send-post", SendPostHandler),
+    (r"/api/user/(?P<username>[^\/]+)", UserHandler) # This should be at the end of the list
+]
+
+MISC_URLS = [
+    (r"/timeline-socket", TimelineHandler),
+]
+
+URLS = API_URLS + FRONTEND_URLS + MISC_URLS

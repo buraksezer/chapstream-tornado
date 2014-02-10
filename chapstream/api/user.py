@@ -15,7 +15,7 @@ from chapstream.backend.db.models.post import Post
 logger = logging.getLogger(__name__)
 
 
-class ProfileHandler(CsRequestHandler):
+class UserHandler(CsRequestHandler):
     @tornado.web.authenticated
     @decorators.api_response
     def get(self, username):
