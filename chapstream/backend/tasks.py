@@ -4,6 +4,7 @@ import logging
 import redis
 from kuyruk import Kuyruk
 
+from chapstream import config
 from chapstream.config import task_queue
 from chapstream.backend.db import session
 from chapstream.backend.db.models.user import User
@@ -11,13 +12,17 @@ from chapstream.backend.db.models.user import User
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-kuyruk = Kuyruk(task_queue)
+kuyruk = Kuyruk(config.task_queue)
+
 
 # TODO: Add retry
 @kuyruk.task
-def post_timeline(body, post_id, user_id):
-    redis_conn = redis.Redis()
-    # TODO: Authentication info required
+def post_timeline(post):
+    # TODO: Connection pool?
+    redis_conn = redis.Redis(
+        host=config.REDIS_HOST,
+        port=config.REDIS_PORT
+    )
     try:
         # Add the post user's timeline
         users = ['burak', 'remzi']
@@ -29,11 +34,6 @@ def post_timeline(body, post_id, user_id):
                 continue
             channel = str(chap.id) + '_channel'
             timeline = str(chap.id) + '_timeline'
-            post = {
-                'user_id': user_id,
-                'body': body,
-                'post_id': post_id
-            }
             post = json.dumps(post)
             # Push user's timeline the current post
             redis_conn.rpush(timeline, post)

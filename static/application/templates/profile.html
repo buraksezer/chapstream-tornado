@@ -1,1 +1,23 @@
-<h1>{{ username }}</h1>
+<div class="row">
+    <div class="timeline-column col-md-9">
+        <div class="profile-header">
+            <h2>This is {{ user.name }}!</h2>
+        </div>
+        <div id="chapstream-timeline">
+            <div class="post" ng-repeat="post in posts">
+                <div class="post-metadata">
+                    <span class="user">{{ user.name }}</span>
+                    <span class="createdat">
+                        <span calc-from-now ts="{{ post.created_at }}">{{ calcTime }}</span>
+                    </span>
+                </div>
+                <div class="post-content">
+                    {{ post.body }}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="rightbar-column col-md-3">
+        <div><h2>Profile-Rightbar</h2></div>
+    </div>
+</div>

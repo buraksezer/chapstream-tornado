@@ -27,22 +27,29 @@ class UserHandler(CsRequestHandler):
             )
         else:
             posts = Post.query.filter_by(user_id=user.id)\
-                .limit(config.TIMELINE_CHUNK_LENGTH).all()
-            posts_processed = {}
-            for post in posts:
+                .order_by("id desc")\
+                .limit(config.TIMELINE_CHUNK_LENGTH)\
+                .all()
+
+            length = len(posts)
+            for index in xrange(0, length):
+                post = posts[index]
                 created_at = calendar.timegm(post.created_at.utctimetuple())
-                posts_processed[post.id] = {
+                posts[index] = {
+                    "post_id": post.id,
                     "body": post.body,
                     "created_at": created_at
                 }
+
             data = {
                 "user": {
                     "name": user.name,
                     "fullname": user.fullname
                 },
-                "posts": posts_processed,
+                "posts": posts,
             }
             result = process_response(data=data, status=config.API_OK)
+
         return result
 
 

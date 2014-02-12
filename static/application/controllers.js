@@ -13,11 +13,14 @@ ChapStreamControllers.controller('ContentCtrl', ['$scope', '$http',
 
 ChapStreamControllers.controller('TimelineCtrl', ['$scope', '$http',
     function TimelineCtrl($scope, $http) {
+        $scope.showForm = true;
         $http.get('/api/timeline/load-timeline').success(
             function(data, status) {
-                $scope.safeApply(function() {
-                    $scope.posts = data;
-                });
+                if (data.status == "OK") {
+                    $scope.safeApply(function() {
+                        $scope.posts = data.posts;
+                    });
+                }
             }
         );
     }
@@ -28,10 +31,12 @@ ChapStreamControllers.controller('ProfileCtrl', ['$scope', '$http', '$routeParam
     function ProfileCtrl($scope, $http, $routeParams) {
         $http.get('/api/user/'+$routeParams.username).success(
             function(data) {
-                $scope.safeApply(function() {
-                    $scope.posts = data;
-                    $scope.username = $routeParams.username;
-                });
+                if (data.status == "OK") {
+                    $scope.safeApply(function() {
+                        $scope.user = data.user;
+                        $scope.posts = data.posts;
+                    });
+                }
             }
         );
     }

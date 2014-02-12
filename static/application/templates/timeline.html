@@ -1,13 +1,15 @@
 <div id="chapstream-timeline">
-    <form role="form">
-        <textarea id="post-form" class="form-control" rows="1" count-char ng-model="commentContent" autosize></textarea>
-        <span class="pull-left">{{ restCharCount }}</span>
-        <button type="submit" class="pull-right btn btn-primary btn-xs" send-post>Post</button>
-    </form>
+    <div ng-include="'/static/application/templates/partials/postform.html'"></div>
     <div id="new-post" count-new-post>{{ new_post_count }} new posts</div>
     <div id="posts" catch-new-post>
         <div class="post" ng-repeat="post in posts">
-            <p>{{ post.body }}</p>
+            <div class="post-metadata">
+                <span class="user">{{ post.name }}</span>
+                <span class="createdat"calc-from-now ts="{{ post.created_at }}">{{ calcTime }}</span>
+            </div>
+            <div class="post-content">
+                {{ post.body }}
+            </div>
         </div>
     </div>
 </div>

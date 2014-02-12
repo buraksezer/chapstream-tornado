@@ -29,4 +29,4 @@ MISC_URLS = [
     (r"/timeline-socket", TimelineHandler),
 ]
 
-URLS = API_URLS + FRONTEND_URLS + MISC_URLS
+URLS = API_URLS + MISC_URLS +FRONTEND_URLS

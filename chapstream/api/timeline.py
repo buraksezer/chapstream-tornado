@@ -1,11 +1,13 @@
 import json
 import logging
+import calendar
 
 import tornado.web
 import tornadoredis
 
 from chapstream import config
-from chapstream.api import CsRequestHandler
+from chapstream.api import decorators
+from chapstream.api import CsRequestHandler, process_response
 from chapstream.api import CsWebSocketHandler
 from chapstream.backend.db.models.post import Post
 from chapstream.backend.tasks import post_timeline
@@ -66,11 +68,21 @@ class SendPostHandler(CsRequestHandler):
         self.session.commit()
 
         # Send a task to write follower's timelines and realtime push
-        post_timeline(body, new_post.id, self.current_user.id)
+        created_at = calendar.timegm(new_post.created_at.utctimetuple())
+        post = {
+            'post_id': new_post.id,
+            'body': body,
+            'created_at': created_at,
+            'user_id': self.current_user.id,
+            'name': self.current_user.name,
+            'fullname': self.current_user.fullname
+        }
+        post_timeline(post)
 
 
 class TimelineLoader(CsRequestHandler):
     @tornado.web.authenticated
+    @decorators.api_response
     def get(self):
         """
         Simply, read user's timeline on redis. Don't hit hard drive.
@@ -86,5 +98,7 @@ class TimelineLoader(CsRequestHandler):
         for index in xrange(0, len(posts)):
             post = posts[index]
             posts[index] = json.loads(post)
-        posts = json.dumps(posts)
-        self.write(posts)
+        posts = {"posts": posts}
+        result = process_response(data=posts, status=config.API_OK)
+
+        return result

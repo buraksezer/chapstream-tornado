@@ -16,6 +16,7 @@ body {
   margin: 0 auto -60px;
   /* Pad bottom by footer height */
   padding: 0 0 60px;
+  background: #f4f3f1;
 }
 
 /* Set the fixed height of the footer here */
@@ -59,4 +60,34 @@ textarea {
 
 #chapstream-timeline #post-form {
     margin-bottom: 5px;
+}
+
+#posts {
+    border: 1px solid #e6e3e1;
+    border-bottom: 0;
+    background: #FFFFFF;
+}
+
+.post {
+    border-bottom: 1px solid #e6e3e1;
+    background: #FFFFFF;
+}
+
+.post-metadata,
+.post-content {
+    margin: 10px;
+}
+
+.profile-header {
+    border: 1px solid #e6e3e1;
+    background: #FFFFFF;
+}
+
+.post-metadata .user {
+    font-size: 15px;
+    font-weight: bold;
+}
+
+.post-metadata .createdat {
+    font-weight: lighter;
 }

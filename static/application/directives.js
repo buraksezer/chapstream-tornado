@@ -83,3 +83,25 @@ ChapStreamDirectives.directive('countNewPost', function($http) {
         }
     }
 });
+
+
+ChapStreamDirectives.directive('calcFromNow', function($timeout) {
+    return {
+        link: function(scope, element, attrs) {
+            attrs.$observe('ts', function(ts) {
+                console.log(ts);
+                function calcTime(timestamp) {
+                    scope.safeApply(function() {
+                        scope.created_at = moment.unix(parseInt(ts, 10)).format('MMMM Do YYYY, h:mm:ss a');
+                        scope.calcTime = moment.unix(parseInt(ts, 10)).fromNow();
+                    });
+                }
+                calcTime(ts);
+                $timeout(function calcTimeInterval(){
+                    calcTime(ts);
+                    $timeout(calcTimeInterval, 60000);
+                },60000);
+            });
+        }
+    }
+});
