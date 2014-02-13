@@ -9,7 +9,7 @@ import tornado.web
 from chapstream import config
 from chapstream.api import decorators
 from chapstream.api import CsRequestHandler, process_response
-from chapstream.backend.db.models.user import User
+from chapstream.backend.db.models.user import User, UserRelation
 from chapstream.backend.db.models.post import Post
 
 logger = logging.getLogger(__name__)
@@ -117,3 +117,28 @@ class RegisterHandler(CsRequestHandler):
 
         # TODO: Use a seperated page to show after registering for marketing
         self.write("Congurulations!")
+
+
+class RelationshipStatusHandler(CsRequestHandler):
+    @tornado.web.authenticated
+    @decorators.api_response
+    def get(self, username):
+        # TODO: Find a cheap way?
+        result = {'rule': None}
+        if self.current_user.name == username:
+            result["rule"] = "YOU"
+            return process_response(data=result, status=config.API_OK)
+
+        chap = self.session.query(User).filter_by(name=username).first()
+        if not chap:
+            return process_response(data=result, status=config.API_FAIL)
+
+        relation = self.session.query(UserRelation).\
+            filter_by(user_id=self.current_user.id,
+                      chap_id=chap.id).first()
+
+        if relation:
+            result['rule'] = "BANNED" if \
+                relation.is_banned else "SUBSCRIBED"
+
+        return process_response(data=result, status=config.API_OK)

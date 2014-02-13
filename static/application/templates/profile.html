@@ -2,6 +2,22 @@
     <div class="timeline-column col-md-9">
         <div class="profile-header">
             <h2>This is {{ user.name }}!</h2>
+            <div relationship-status class="relationship-status">
+                <span ng-if="relSubsAndBan">
+                    <button type="button" class="btn btn-primary btn-sm">Subscribe</button>
+                    <button type="button" class="btn btn-danger btn-sm">Block</button>
+                </span>
+                <span ng-if="relUnban">
+                    <button type="button" class="btn btn-success btn-sm">Unblock</button>
+                </span>
+                <span ng-if="relUnsubsAndBan">
+                    <button type="button" class="btn btn-warning btn-sm">Unsubscribe</button>
+                    <button type="button" class="btn btn-danger btn-sm">Block</button>
+                </span>
+                <span ng-if="my_profile">
+                    <button type="button" class="btn btn-primary btn-sm">That's you!</button>
+                </span>
+            </div>
         </div>
         <div id="chapstream-timeline">
             <div class="post" ng-repeat="post in posts">
@@ -18,6 +34,6 @@
         </div>
     </div>
     <div class="rightbar-column col-md-3">
-        <div><h2>Profile-Rightbar</h2></div>
+        <h3>Rightbar</h3>
     </div>
 </div>

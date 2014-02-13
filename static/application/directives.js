@@ -105,3 +105,25 @@ ChapStreamDirectives.directive('calcFromNow', function($timeout) {
         }
     }
 });
+
+ChapStreamDirectives.directive('relationshipStatus', function($http, $routeParams) {
+    return {
+        link: function(scope, element, attrs) {
+            $http.get("/api/user/relationship/"+$routeParams.username).success(
+                function(data) {
+                    scope.safeApply(function() {
+                        if (data.rule === null) {
+                            scope.relSubsAndBan = true;
+                        } else if (data.rule === "BANNED") {
+                            scope.relUnban = true;
+                        } else if (data.rule === "SUBSCRIBED") {
+                            scope.relUnsubsAndBan = true;
+                        } else if (data.rule === "YOU") {
+                            scope.my_profile = true;
+                        }
+                    });
+                }
+            );
+        }
+    }
+});

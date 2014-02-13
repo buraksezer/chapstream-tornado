@@ -4,7 +4,6 @@
 
 {% block content_container %}
     <!-- Wrap all page content here -->
-    <div id="wrap">
 
       <!-- Fixed navbar -->
       <div class="navbar navbar-default navbar-fixed-top pull-right" role="navigation">
@@ -26,15 +25,8 @@
         </div>
       </div>
       <!-- Begin page content -->
-      <div class="container">
+      <div id="chapstream-container" class="container">
         {% module xsrf_form_html() %}
         <div ng-view></div>
       </div>
-    </div>
-
-    <!--    <div id="footer">
-      <div class="container">
-        <p class="text-muted credit">Example courtesy <a href="http://martinbean.co.uk">purak</a> and <a href="http://ryanfait.com/sticky-footer/">kusburnu</a>.</p>
-      </div>
-    </div> -->
 {% end %}

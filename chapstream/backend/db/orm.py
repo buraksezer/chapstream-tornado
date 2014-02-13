@@ -1,10 +1,33 @@
+import json
+
 from sqlalchemy import func
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import object_session
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.types import TypeDecorator, Text, UnicodeText
 
 from chapstream.backend.db import chapstream_engine
 from chapstream.backend.db import session
+
+
+class JSONType(TypeDecorator):
+    """Represents an immutable structure as a json-encoded string."""
+
+    impl = Text
+
+    def process_bind_param(self, value, dialect):
+        if value is not None and not isinstance(value, basestring):
+            value = json.dumps(value)
+        return value
+
+    def process_result_value(self, value, dialect):
+        if value is not None:
+            value = json.loads(value)
+        return value
+
+
+class UnicodeJSONType(JSONType):
+    impl = UnicodeText
 
 
 class Base(object):

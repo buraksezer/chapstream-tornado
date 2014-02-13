@@ -26,6 +26,7 @@ class User(Base):
     sign_up_date = Column(DateTime, default=datetime.utcnow())
     last_seen = Column(DateTime, default=datetime.utcnow())
     posts = relationship('Post', backref='user', lazy='dynamic')
+    notifications = relationship('Notification', backref='user', lazy='dynamic')
 
     def __repr__(self):
         return "<User('%s', '%s', '%s')>" % \
