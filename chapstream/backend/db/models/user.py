@@ -29,7 +29,7 @@ class User(Base):
     notifications = relationship('Notification', backref='user', lazy='dynamic')
 
     def __repr__(self):
-        return "<User('%s', '%s', '%s')>" % \
+        return "<User(id:'%s', name:'%s', email:'%s')>" % \
                 (self.id, self.name, self.email)
 
     def authenticate(self, password):
@@ -47,5 +47,5 @@ class UserRelation(Base):
     is_banned = Column(Boolean, default=False)
 
     def __repr__(self):
-        return "<UserRelation('%s user:%s, chap:%s)" % \
+        return "<UserRelation('id:%s user:%s, chap:%s)" % \
                (self.id, self.user_id, self.chap_id)

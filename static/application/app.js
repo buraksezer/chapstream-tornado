@@ -27,7 +27,9 @@ app.config(['$routeProvider',
     config(['$httpProvider',
         function($httpProvider) {
             var _xsrf = $('input[name=_xsrf]').val();
+            /* TODO: Post seems unnecessary */
             $httpProvider.defaults.headers.post['X-CSRFToken'] = _xsrf;
+            $httpProvider.defaults.headers.common['X-CSRFToken'] = _xsrf;
         }
     ]).config(["$locationProvider", function($locationProvider) {
         $locationProvider.html5Mode(true);

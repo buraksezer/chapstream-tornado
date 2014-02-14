@@ -39,7 +39,7 @@ class CsWebSocketHandler(WebSocketHandler):
         return self.application.session
 
 
-def process_response(data=None, status=API_OK, message=None):
+def process_response(data={}, status=API_OK, message=None):
     """
     Process API responses and creates a boilerplate dict.
     """

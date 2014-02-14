@@ -19,5 +19,5 @@ class Notification(Base):
     created_at = Column(DateTime, default=func.current_timestamp())
 
     def __repr__(self):
-        return "<Notification('%s', '%s')>" \
+        return "<Notification(id:'%s', user_id:'%s')>" \
                % (self.id, self.user_id)

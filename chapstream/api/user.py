@@ -142,3 +142,92 @@ class RelationshipStatusHandler(CsRequestHandler):
                 relation.is_banned else "SUBSCRIBED"
 
         return process_response(data=result, status=config.API_OK)
+
+
+class SubscriptionHandler(CsRequestHandler):
+    @tornado.web.authenticated
+    @decorators.api_response
+    def post(self, username):
+        chap = self.session.query(User).filter_by(
+            name=username).first()
+        rel = UserRelation(user_id=self.current_user.id,
+                           chap_id=chap.id)
+        self.session.add(rel)
+        self.session.commit()
+        status = config.API_OK if rel.id else config.API_FAIL
+
+        return process_response(status=status)
+
+    @tornado.web.authenticated
+    @decorators.api_response
+    def delete(self, username):
+        chap = self.session.query(User).filter_by(
+            name=username).first()
+        if not chap:
+            return process_response(status=config.API_FAIL,
+                                    message="%s could not be found." % username)
+
+        rel = self.session.query(UserRelation).filter_by(
+            user_id=self.current_user.id,
+            chap_id=chap.id).first()
+        if not rel:
+            return process_response(status=config.API_FAIL,
+                                    message="Relationship could not be found.")
+        self.session.delete(rel)
+        self.session.commit()
+
+        return process_response(status=config.API_OK)
+
+
+class BlockHandler(CsRequestHandler):
+    @tornado.web.authenticated
+    @decorators.api_response
+    def post(self, username):
+        chap = self.session.query(User).filter_by(
+            name=username).first()
+        if not chap:
+            return process_response(status=config.API_FAIL,
+                                    message="%s could not be found." % username)
+
+        rel = self.session.query(UserRelation).filter_by(
+            user_id=self.current_user.id,
+            chap_id=chap.id).first()
+
+        if not rel:
+            rel = UserRelation(user_id=self.current_user.id,
+                               chap_id=chap.id, is_banned=True)
+            self.session.add(rel)
+            self.session.commit()
+        else:
+            if rel.is_banned:
+                return process_response(status=config.API_FAIL,
+                                        message="%s is already blocked." % username)
+            rel.is_banned = True
+            self.session.commit()
+
+        return process_response(status=config.API_OK)
+
+    @tornado.web.authenticated
+    @decorators.api_response
+    def delete(self, username):
+        chap = self.session.query(User).filter_by(
+            name=username).first()
+        if not chap:
+            return process_response(status=config.API_FAIL,
+                                    message="%s could not be found." % username)
+
+        rel = self.session.query(UserRelation).filter_by(
+            user_id=self.current_user.id,
+            chap_id=chap.id).first()
+        if not rel:
+            return process_response(status=config.API_FAIL,
+                                    message="Relationship could not be found.")
+
+        if not rel.is_banned:
+            # TODO: Fix english.
+            return process_response(status=config.API_FAIL,
+                                    message="%s is not blocked." % username)
+        self.session.delete(rel)
+        self.session.commit()
+
+        return process_response(status=config.API_OK)
