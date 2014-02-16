@@ -9,9 +9,10 @@ from chapstream import config
 from chapstream.api import decorators
 from chapstream.api import CsRequestHandler, process_response
 from chapstream.api import CsWebSocketHandler
+from chapstream.backend.db.models.user import UserRelation
 from chapstream.backend.db.models.post import Post
 from chapstream.backend.tasks import post_timeline
-from chapstream.config import TIMELINE_CHUNK_LENGTH
+from chapstream.config import TIMELINE_CHUNK_SIZE
 
 logger = logging.getLogger(__name__)
 
@@ -89,7 +90,7 @@ class TimelineLoader(CsRequestHandler):
         """
         timeline = str(self.current_user.id) + '_timeline'
         length = self.redis_conn.llen(timeline)
-        offset = length - TIMELINE_CHUNK_LENGTH
+        offset = length - TIMELINE_CHUNK_SIZE
         posts = self.redis_conn.lrange(timeline, offset, length)
         posts.reverse()
 

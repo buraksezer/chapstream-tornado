@@ -7,6 +7,7 @@ import tornado
 import tornado.web
 
 from chapstream import config
+from chapstream.backend.tasks import block_user
 from chapstream.api import decorators
 from chapstream.api import CsRequestHandler, process_response
 from chapstream.backend.db.models.user import User, UserRelation
@@ -19,7 +20,15 @@ class UserHandler(CsRequestHandler):
     @tornado.web.authenticated
     @decorators.api_response
     def get(self, username):
+        # TODO: need "you blocked this user check"
         user = self.session.query(User).filter_by(name=username).first()
+        if user:
+            rel = self.session.query(UserRelation).\
+                filter_by(chap_id=self.current_user.id,
+                          user_id=user.id, is_banned=True).first()
+            if rel:
+                user = None
+
         if not user:
             result = process_response(
                 message="%s could not be found." % username,
@@ -28,7 +37,7 @@ class UserHandler(CsRequestHandler):
         else:
             posts = Post.query.filter_by(user_id=user.id)\
                 .order_by("id desc")\
-                .limit(config.TIMELINE_CHUNK_LENGTH)\
+                .limit(config.TIMELINE_CHUNK_SIZE)\
                 .all()
 
             length = len(posts)
@@ -197,14 +206,20 @@ class BlockHandler(CsRequestHandler):
             rel = UserRelation(user_id=self.current_user.id,
                                chap_id=chap.id, is_banned=True)
             self.session.add(rel)
-            self.session.commit()
         else:
             if rel.is_banned:
                 return process_response(status=config.API_FAIL,
                                         message="%s is already blocked." % username)
             rel.is_banned = True
-            self.session.commit()
 
+        reverse_rel = self.session.query(UserRelation).\
+            filter_by(chap_id=self.current_user.id, user_id=chap.id).first()
+        if reverse_rel:
+            self.session.delete(reverse_rel)
+
+        self.session.commit()
+
+        block_user(self.current_user.id, chap.id)
         return process_response(status=config.API_OK)
 
     @tornado.web.authenticated

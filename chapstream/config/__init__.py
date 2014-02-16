@@ -10,7 +10,7 @@ tornado_server_settings = dict(
     login_url = "/login"
 )
 
-TIMELINE_CHUNK_LENGTH = 15
+TIMELINE_CHUNK_SIZE = 15
 
 # API request status
 API_OK = "OK"
