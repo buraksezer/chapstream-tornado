@@ -13,7 +13,7 @@ from chapstream.api.user import SubscriptionHandler
 from chapstream.api.user import BlockHandler
 
 # Timeline related handlers
-from chapstream.api.timeline import TimelineHandler
+from chapstream.api.commons import RealtimeHandler
 from chapstream.api.timeline import TimelineLoader
 from chapstream.api.timeline import SendPostHandler
 
@@ -37,7 +37,7 @@ API_URLS = [
 ]
 
 MISC_URLS = [
-    (r"/timeline-socket", TimelineHandler),
+    (r"/timeline-socket", RealtimeHandler),
 ]
 
 URLS = API_URLS + MISC_URLS +FRONTEND_URLS
