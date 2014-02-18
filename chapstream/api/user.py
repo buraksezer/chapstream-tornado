@@ -7,7 +7,7 @@ import tornado
 import tornado.web
 
 from chapstream import config
-from chapstream.backend.tasks import block_user
+from chapstream.backend.tasks import block_user, push_notification
 from chapstream.api import decorators
 from chapstream.api import CsRequestHandler, process_response
 from chapstream.backend.db.models.user import User, UserRelation
@@ -164,6 +164,15 @@ class SubscriptionHandler(CsRequestHandler):
         self.session.add(rel)
         self.session.commit()
         status = config.API_OK if rel.id else config.API_FAIL
+
+        # Push a notification about the event.
+        # TODO: Handle fail conditions
+        message = {
+            "event": "subscription_notify",
+            "body": "%s has subscribed to your stream." %
+                        self.current_user.name
+        }
+        push_notification([chap.id], message)
 
         return process_response(status=status)
 

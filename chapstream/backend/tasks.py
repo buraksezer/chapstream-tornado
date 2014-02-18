@@ -8,6 +8,8 @@ from chapstream import config
 from chapstream.config import task_queue
 from chapstream.backend.db import session
 from chapstream.backend.db.models.user import User, UserRelation
+from chapstream.backend.db.models.notification import Notification
+
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -86,3 +88,29 @@ def block_user(user_id, chap_id):
     chap_timeline = str(chap.id) + '_timeline'
     remove_posts(chap_timeline, user)
 
+
+@kuyruk.task
+def push_notification(user_ids, message):
+    redis_conn = redis.Redis(
+        host=config.REDIS_HOST,
+        port=config.REDIS_PORT
+    )
+
+    for user_id in user_ids:
+        user = User.get(user_id)
+        if not user:
+            logger.warning("User: %s could not be found." % user_id)
+            continue
+
+        notification = Notification(message=message,
+                                    user_id=user_id)
+        session.add(notification)
+        session.commit()
+
+        try:
+            channel = str(user.id) + '_channel'
+            message = json.dumps(message)
+            redis_conn.publish(channel, message)
+        except redis.ConnectionError as err:
+            logger.error('Connection error: %s', err)
+            # TODO: Handle failed tasks

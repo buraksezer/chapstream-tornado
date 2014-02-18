@@ -13,7 +13,12 @@ angular.module('ChapStreamServices', []).factory('InitService', function() {
 
             ws.onmessage = function(e) {
                 var data = jQuery.parseJSON(e.data);
-                $('#new-post, #posts').trigger("new_post_event", data);
+                console.log(data);
+                if (data['event'] === 'subscription_notify') {
+                    console.log(data);
+                } else {
+                    $('#new-post, #posts').trigger("new_post_event", data);
+                }
             }
         }
     }
