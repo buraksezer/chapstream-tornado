@@ -7,7 +7,8 @@ import tornado.autoreload
 from chapstream.urls import URLS
 from chapstream.backend.db import session
 from chapstream.redisconn import redis_conn
-from chapstream.config import tornado_server_settings
+from chapstream.config import tornado_server_settings, \
+    POST_RID, POST_RID_HEAD_KEY
 
 
 tornado.options.define("port", default=8000, help="Run on port", type=int)
@@ -26,8 +27,12 @@ class Application(tornado.web.Application):
 
         tornado.web.Application.__init__(self, URLS, **tornado_server_settings)
 
-        # global SQLAlchemy connection
+        # Global SQLAlchemy connection
         self.session = session
 
-        # global Redis connection
+        # Global Redis connection
         self.redis_conn = redis_conn
+
+        # Set POST_RID_HEAD_KEY if not set
+        if not self.redis_conn.get(POST_RID_HEAD_KEY):
+            self.redis_conn.set(POST_RID_HEAD_KEY, POST_RID)

@@ -24,9 +24,13 @@ def push_to_timeline(user, post):
     try:
         channel = str(user.id) + '_channel'
         timeline = str(user.id) + '_timeline'
+        id_ = str(post["id_"])
         post = json.dumps(post)
         # Push user's timeline the current post
         redis_conn.rpush(timeline, post)
+        # Set user-post relation to inspect posts while removing
+        post_rid = "post_rid::" + id_
+        redis_conn.hset(post_rid, str(user.id), config.POST_SOURCE_DIRECT)
         # TODO: Check size of the list and rotate it if
         # required.
         logger.info('Sending a message to %s', channel)
@@ -39,6 +43,9 @@ def push_to_timeline(user, post):
 # TODO: Add retry
 @kuyruk.task
 def post_timeline(post, receiver_users=None, receiver_groups=None):
+    # Generate a Redis timeline post id
+    post["id_"] = redis_conn.incr(config.POST_RID_HEAD_KEY)
+
     if not receiver_groups:
         owner = User.get(post['user_id'])
         push_to_timeline(owner, post)

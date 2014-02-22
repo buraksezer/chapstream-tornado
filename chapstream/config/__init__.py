@@ -10,7 +10,16 @@ tornado_server_settings = dict(
     login_url = "/login"
 )
 
+REDIS_KEY_DELIMITER = "::"
+
 TIMELINE_CHUNK_SIZE = 15
+
+# Start value of the id numbers of timeline posts
+POST_RID = 0
+POST_RID_HEAD_KEY = "post_rid_head"
+
+POST_SOURCE_DIRECT = "direct"
+POST_SOURCE_REPOST = "repost"
 
 # API request status
 API_OK = "OK"

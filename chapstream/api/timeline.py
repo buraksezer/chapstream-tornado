@@ -14,7 +14,7 @@ from chapstream.config import TIMELINE_CHUNK_SIZE
 logger = logging.getLogger(__name__)
 
 
-class SendPostHandler(CsRequestHandler):
+class PostHandler(CsRequestHandler):
     @tornado.web.authenticated
     def post(self):
         logger.info('Creating a new post by %s', self.current_user.name)
@@ -48,6 +48,20 @@ class SendPostHandler(CsRequestHandler):
         post_timeline(post, receiver_users=receiver_users,
                       receiver_groups=receiver_groups)
 
+    @tornado.web.authenticated
+    @decorators.api_response
+    def delete(self):
+        post_rid = self.get_argument("post_rid")
+        if not post_rid:
+            return process_response(status=config.API_OK,
+                                    message="You must send a post_rid.")
+        key = "post_rid::" + post_rid
+        if not self.redis_conn.hget(key, str(self.current_user.id)):
+            return process_response(status=config.API_FAIL,
+                                    message="POST_RID:%s could not be found." % post_rid)
+
+        #delete_post_from
+
 
 class TimelineLoader(CsRequestHandler):
     @tornado.web.authenticated
@@ -68,6 +82,4 @@ class TimelineLoader(CsRequestHandler):
             post = posts[index]
             posts[index] = json.loads(post)
         posts = {"posts": posts}
-        result = process_response(data=posts, status=config.API_OK)
-
-        return result
+        return process_response(data=posts, status=config.API_OK)
