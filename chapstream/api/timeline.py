@@ -36,7 +36,17 @@ class SendPostHandler(CsRequestHandler):
             'name': self.current_user.name,
             'fullname': self.current_user.fullname
         }
-        post_timeline(post)
+        receiver_users = self.get_argument("receiver_users", None)
+        if receiver_users:
+            receiver_users = [user for user in receiver_users.split(",")]
+
+        receiver_groups = self.get_argument("receiver_groups", None)
+        if receiver_groups:
+            # TODO: Handle invalid group ids
+            receiver_groups = [group for group in receiver_groups.split(",")]
+
+        post_timeline(post, receiver_users=receiver_users,
+                      receiver_groups=receiver_groups)
 
 
 class TimelineLoader(CsRequestHandler):

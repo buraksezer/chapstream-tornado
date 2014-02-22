@@ -1,14 +1,13 @@
 import os
-import redis
 
 import tornado.web
 import tornado.options
 import tornado.autoreload
 
-from chapstream import config
 from chapstream.urls import URLS
-from chapstream.config import tornado_server_settings
 from chapstream.backend.db import session
+from chapstream.redisconn import redis_conn
+from chapstream.config import tornado_server_settings
 
 
 tornado.options.define("port", default=8000, help="Run on port", type=int)
@@ -31,7 +30,4 @@ class Application(tornado.web.Application):
         self.session = session
 
         # global Redis connection
-        self.redis_conn = redis.Redis(
-            host=config.REDIS_HOST,
-            port=config.REDIS_PORT
-        )
+        self.redis_conn = redis_conn

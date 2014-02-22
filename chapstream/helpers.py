@@ -12,3 +12,11 @@ def find_subclasses(cls):
                 getattr(obj[0], "__mro__", None) is obj):
             results.append(obj[0])
     return results
+
+
+def group_key(group_id):
+    return "group_" + str(group_id)
+
+
+def user_groups_key(user):
+    return user + "_groups"
