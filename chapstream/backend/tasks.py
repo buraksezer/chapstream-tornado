@@ -90,7 +90,7 @@ def post_to_group(group_id, post):
         logger.info("Invalid group: %s" % group_id)
         return
 
-    # Get member of the group.
+    # Get members of the group.
     group_key = helpers.group_key(group_id)
     user_ids = redis_conn.hgetall(group_key)
     if not user_ids:
@@ -109,6 +109,26 @@ def post_to_group(group_id, post):
 
 
 @kuyruk.task
+def delete_post_from_timeline(post_rid):
+    key = "post_rid::" + post_rid
+    user_ids = redis_conn.hgetall(key)
+    for user_id in user_ids:
+        user_timeline = user_id + "_timeline"
+        posts = redis_conn.lrange(user_timeline, 0,
+                                  config.TIMELINE_MAX_POST_COUNT)
+        logger.info(posts)
+        for post in posts:
+            post_json = json.loads(post)
+            if str(post_json["id_"]) == post_rid:
+                if not redis_conn.lrem(user_timeline, post):
+                    logger.warning("POST_RID:%s could not be found or removed. User %s",
+                                   post_rid, user_id)
+                if not redis_conn.hdel(key, user_id):
+                    logger.warning("User:%s could not be removed from POST_RID:%s",
+                                   user_id, post_rid)
+
+                
+@kuyruk.task
 def block_user(user_id, chap_id):
     user = User.get(user_id)
     chap = User.get(chap_id)
@@ -118,20 +138,23 @@ def block_user(user_id, chap_id):
                      (user_id, chap_id))
         return
 
-    redis_conn = redis.Redis(
-        host=config.REDIS_HOST,
-        port=config.REDIS_PORT
-    )
-
     def remove_posts(timeline, blocked_user):
-        length = redis_conn.llen(timeline)
-        posts = redis_conn.lrange(timeline, 0, length)
+        posts = redis_conn.lrange(timeline, 0,
+                                  config.TIMELINE_MAX_POST_COUNT)
         for post in posts:
-            parsed = json.loads(post)
-            if parsed["user_id"] == blocked_user.id:
+            post_json = json.loads(post)
+            if post_json["user_id"] == blocked_user.id:
                 logger.info("Remove post from: %s. Post: %s"
                             % (blocked_user.name, post))
-                redis_conn.lrem(timeline, post)
+                if redis_conn.lrem(timeline, post):
+                    post_rid = str(post_json["id_"])
+                    key = "post_rid::" + post_rid
+                    if not redis_conn.hdel(key, str(blocked_user.id)):
+                        logger.warning("User:%s could not be removed from POST_RID:%s",
+                                       user_id, post_rid)
+                else:
+                    logger.warning("POST_RID:%s could not be removed or found.",
+                                   post_rid)
 
     # Remove posts from the user who blocks a user.
     user_timeline = str(user.id) + '_timeline'

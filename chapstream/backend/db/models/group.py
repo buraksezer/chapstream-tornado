@@ -23,7 +23,7 @@ class Group(Base):
     summary = Column(UnicodeText)
     is_private = Column(Boolean, default=False)
     is_hidden = Column(Boolean, default=False)
-    posts = relationship('Post', backref='group',
+    posts = relationship('Post', backref='groups',
                          secondary=group_posts, lazy='dynamic')
     created_at = Column(DateTime, default=func.current_timestamp())
 

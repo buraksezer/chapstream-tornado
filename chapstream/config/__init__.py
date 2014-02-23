@@ -12,6 +12,7 @@ tornado_server_settings = dict(
 
 REDIS_KEY_DELIMITER = "::"
 
+TIMELINE_MAX_POST_COUNT = 800
 TIMELINE_CHUNK_SIZE = 15
 
 # Start value of the id numbers of timeline posts

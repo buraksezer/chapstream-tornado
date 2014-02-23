@@ -32,7 +32,7 @@ FRONTEND_URLS = [
 API_URLS = [
     (r"/api/group/subscribe/(?P<group_id>[^\/]+)", GroupSubscriptionHandler),
     (r"/api/timeline/load-timeline", TimelineLoader),
-    (r"/api/timeline/send-post", PostHandler),
+    (r"/api/timeline/post", PostHandler),
     (r"/api/user/relationship/(?P<username>[^\/]+)", RelationshipStatusHandler),
     (r"/api/user/subscribe/(?P<username>[^\/]+)", SubscriptionHandler),
     (r"/api/user/unsubscribe/(?P<username>[^\/]+)", SubscriptionHandler),
