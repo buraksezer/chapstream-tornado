@@ -3,6 +3,7 @@
 --
 
 SET statement_timeout = 0;
+SET lock_timeout = 0;
 SET client_encoding = 'UTF8';
 SET standard_conforming_strings = on;
 SET check_function_bodies = false;
@@ -29,6 +30,49 @@ SET default_tablespace = '';
 SET default_with_oids = false;
 
 --
+-- Name: group_posts; Type: TABLE; Schema: public; Owner: csdbuser; Tablespace: 
+--
+
+CREATE TABLE group_posts (
+    gp_group integer,
+    gp_post integer
+);
+
+
+ALTER TABLE public.group_posts OWNER TO csdbuser;
+
+--
+-- Name: groups; Type: TABLE; Schema: public; Owner: csdbuser; Tablespace: 
+--
+
+CREATE TABLE groups (
+    id bigint NOT NULL,
+    name character varying NOT NULL,
+    summary text,
+    is_private boolean,
+    is_hidden boolean,
+    created_at timestamp without time zone
+);
+
+
+ALTER TABLE public.groups OWNER TO csdbuser;
+
+--
+-- Name: notifications; Type: TABLE; Schema: public; Owner: csdbuser; Tablespace: 
+--
+
+CREATE TABLE notifications (
+    id bigint NOT NULL,
+    message text,
+    is_read boolean,
+    user_id integer,
+    created_at timestamp without time zone
+);
+
+
+ALTER TABLE public.notifications OWNER TO csdbuser;
+
+--
 -- Name: posts; Type: TABLE; Schema: public; Owner: csdbuser; Tablespace: 
 --
 
@@ -43,6 +87,34 @@ CREATE TABLE posts (
 
 
 ALTER TABLE public.posts OWNER TO csdbuser;
+
+--
+-- Name: seq_group_id; Type: SEQUENCE; Schema: public; Owner: csdbuser
+--
+
+CREATE SEQUENCE seq_group_id
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.seq_group_id OWNER TO csdbuser;
+
+--
+-- Name: seq_notification_id; Type: SEQUENCE; Schema: public; Owner: csdbuser
+--
+
+CREATE SEQUENCE seq_notification_id
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.seq_notification_id OWNER TO csdbuser;
 
 --
 -- Name: seq_post_id; Type: SEQUENCE; Schema: public; Owner: csdbuser
@@ -122,6 +194,22 @@ CREATE TABLE users (
 ALTER TABLE public.users OWNER TO csdbuser;
 
 --
+-- Name: groups_pkey; Type: CONSTRAINT; Schema: public; Owner: csdbuser; Tablespace: 
+--
+
+ALTER TABLE ONLY groups
+    ADD CONSTRAINT groups_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: notifications_pkey; Type: CONSTRAINT; Schema: public; Owner: csdbuser; Tablespace: 
+--
+
+ALTER TABLE ONLY notifications
+    ADD CONSTRAINT notifications_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: posts_pkey; Type: CONSTRAINT; Schema: public; Owner: csdbuser; Tablespace: 
 --
 
@@ -143,6 +231,30 @@ ALTER TABLE ONLY user_relations
 
 ALTER TABLE ONLY users
     ADD CONSTRAINT users_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: group_posts_gp_group_fkey; Type: FK CONSTRAINT; Schema: public; Owner: csdbuser
+--
+
+ALTER TABLE ONLY group_posts
+    ADD CONSTRAINT group_posts_gp_group_fkey FOREIGN KEY (gp_group) REFERENCES groups(id);
+
+
+--
+-- Name: group_posts_gp_post_fkey; Type: FK CONSTRAINT; Schema: public; Owner: csdbuser
+--
+
+ALTER TABLE ONLY group_posts
+    ADD CONSTRAINT group_posts_gp_post_fkey FOREIGN KEY (gp_post) REFERENCES posts(id);
+
+
+--
+-- Name: notifications_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: csdbuser
+--
+
+ALTER TABLE ONLY notifications
+    ADD CONSTRAINT notifications_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id);
 
 
 --
