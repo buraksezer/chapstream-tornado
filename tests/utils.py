@@ -1,15 +1,28 @@
+import uuid
 import random
+import hashlib
 
+from chapstream.backend.db.orm import session
 from chapstream.backend.db.models.user import User
 
 RANDINT_MAX = 1000
 RANDINT_MIN = 0
-USERNAME_TEMPLATE = "user"
+USERNAME_TEMPLATE = "lepton"
 DEFAULT_PASSWORD = "hadron"
+DEFAULT_EMAIL = "lpms@hadronproject.org"
 
 
 def create_test_user(username=None):
     if not username:
         username_prefix = random.randint(RANDINT_MIN, RANDINT_MAX)
-        username = "_".join([USERNAME_TEMPLATE, username_prefix])
+        username = "_".join([USERNAME_TEMPLATE, str(username_prefix)])
 
+    # Register the user
+    salt = unicode(uuid.uuid4().hex)
+    hash = hashlib.sha512(DEFAULT_PASSWORD + salt).hexdigest()
+    new_user = User(name=username, hash=hash,
+                    email=DEFAULT_EMAIL, salt=salt)
+    session.add(new_user)
+    session.commit()
+
+    return new_user
