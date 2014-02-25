@@ -2,6 +2,7 @@ import urllib
 import logging
 
 import mock
+from mock import patch
 
 from chapstream.testing import CsBaseTestCase
 from chapstream.backend.db.models.user import User, UserRelation
@@ -57,10 +58,10 @@ class UserAuth(CsBaseTestCase):
 
 
 class UserSubscription(CsBaseTestCase):
-    def test_subscribe(self):
+    @patch("chapstream.api.user.push_notification")
+    def test_subscribe(self, push_notification):
         user = utils.create_test_user()
         chap = utils.create_test_user()
-        # TODO: Mock push_notification task
         with mock.patch.object(CsRequestHandler,
                                "get_secure_cookie") as m:
             m.return_value = user.name
