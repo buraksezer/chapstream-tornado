@@ -19,7 +19,8 @@ except NameError:
     from functools import reduce  # py3
 
 TEST_MODULES = [
-    'tests.test_user'
+    'tests.test_user',
+    'tests.test_group'
 ]
 
 

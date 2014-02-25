@@ -19,6 +19,7 @@ from chapstream.api.timeline import PostHandler
 
 # Group related handlers
 from chapstream.api.group import GroupSubscriptionHandler
+from chapstream.api.group import GroupHandler
 
 
 FRONTEND_URLS = [
@@ -31,6 +32,8 @@ FRONTEND_URLS = [
 
 API_URLS = [
     (r"/api/group/subscribe/(?P<group_id>[^\/]+)", GroupSubscriptionHandler),
+    (r"/api/group", GroupHandler),
+    (r"/api/group/(?P<group_id>[^\/]+)", GroupHandler),
     (r"/api/timeline/load-timeline", TimelineLoader),
     (r"/api/timeline/post", PostHandler),
     (r"/api/user/relationship/(?P<username>[^\/]+)", RelationshipStatusHandler),

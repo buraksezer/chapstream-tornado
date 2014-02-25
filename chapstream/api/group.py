@@ -15,6 +15,40 @@ from chapstream.api import CsRequestHandler, process_response
 logger = logging.getLogger(__name__)
 
 
+class GroupHandler(CsRequestHandler):
+    @tornado.web.authenticated
+    @decorators.api_response
+    def post(self):
+        # TODO: Slugify for group name
+        name = self.get_argument("name")
+        if not name:
+            return process_response(status=config.API_FAIL,
+                                    message="You must give a group name.")
+        summary = self.get_argument("summary")
+
+        # TODO: Set some rules for group name
+        # TODO: Get is_private and is_hidden
+        group = Group(name=name, summary=summary)
+        self.session.add(group)
+        self.session.commit()
+
+        return process_response(status=config.API_OK)
+
+    @tornado.web.authenticated
+    @decorators.api_response
+    def delete(self, group_id):
+        group = self.session.query(Group).\
+            filter_by(id=group_id).first()
+        if not group:
+            return process_response(status=config.API_FAIL,
+                                    message="Group:%s could not be found."
+                                            % group_id)
+
+        self.session.delete(group)
+        self.session.commit()
+        return process_response(status=config.API_OK)
+
+
 class GroupSubscriptionHandler(CsRequestHandler):
     def set_variables(self):
         self.group = helpers.group_key(self.group_id)
