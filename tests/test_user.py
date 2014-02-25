@@ -7,6 +7,7 @@ from mock import patch
 from chapstream.testing import CsBaseTestCase
 from chapstream.backend.db.models.user import User, UserRelation
 from chapstream.api import CsRequestHandler
+from chapstream.backend.db import session
 
 from tests import utils
 
@@ -72,3 +73,53 @@ class UserSubscription(CsBaseTestCase):
                                            chap_id=chap.id).first()
         self.assertEqual(subscribe_response.code, 200)
         self.assertNotEqual(res, None)
+
+
+class UserBlock(CsBaseTestCase):
+    @patch("chapstream.api.user.block_user")
+    def test_block_stranger(self, block_user):
+        user = utils.create_test_user(username="u1")
+        chap = utils.create_test_user(username="u2")
+        with mock.patch.object(CsRequestHandler,
+                               "get_secure_cookie") as m:
+            m.return_value = user.name
+            response = self.fetch("/api/user/block/"+chap.name,
+                                  body="foo",
+                                  method="POST")
+
+        self.assertEqual(response.code, 200)
+
+        rel = UserRelation.query.filter_by(
+            user_id=user.id,
+            chap_id=chap.id).first()
+
+        self.assertNotEqual(rel, None)
+        self.assertEqual(rel.is_banned, True)
+
+    @patch("chapstream.api.user.block_user")
+    def test_block_friend(self, block_user):
+        user = utils.create_test_user(username="u1")
+        chap = utils.create_test_user(username="u2")
+
+        rel1 = UserRelation(user_id=user.id, chap_id=chap.id)
+        rel2 = UserRelation(user_id=chap.id, chap_id=user.id)
+        session.add(rel1)
+        session.add(rel2)
+        session.commit()
+
+        with mock.patch.object(CsRequestHandler,
+                               "get_secure_cookie") as m:
+            m.return_value = user.name
+            response = self.fetch("/api/user/block/"+chap.name,
+                                  body="foo",
+                                  method="POST")
+
+        self.assertEqual(response.code, 200)
+
+        rel1 = UserRelation.query.filter_by(user_id=user.id,
+                                            chap_id=chap.id).first()
+        self.assertNotEqual(rel1, None)
+        self.assertEqual(rel1.is_banned, True)
+        rel2 = UserRelation.query.filter_by(user_id=chap.id,
+                                            chap_id=user.id).first()
+        self.assertEqual(rel2, None)
