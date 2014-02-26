@@ -32,8 +32,6 @@ class GroupHandler(CsRequestHandler):
         self.session.add(group)
         self.session.commit()
 
-        return process_response(status=config.API_OK)
-
     @tornado.web.authenticated
     @decorators.api_response
     def delete(self, group_id):
@@ -46,7 +44,6 @@ class GroupHandler(CsRequestHandler):
 
         self.session.delete(group)
         self.session.commit()
-        return process_response(status=config.API_OK)
 
 
 class GroupSubscriptionHandler(CsRequestHandler):
@@ -82,7 +79,6 @@ class GroupSubscriptionHandler(CsRequestHandler):
                                     message="Subscription failed. Group: %s"
                                             % group_id)
 
-        return process_response(status=config.API_OK)
 
     @tornado.web.authenticated
     @decorators.api_response
@@ -102,5 +98,3 @@ class GroupSubscriptionHandler(CsRequestHandler):
             return process_response(status=config.API_FAIL,
                                     message="Subscription removing failed. Group: %s"
                                             % group_id)
-
-        return process_response(status=config.API_OK)

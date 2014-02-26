@@ -19,4 +19,4 @@ def group_key(group_id):
 
 
 def user_groups_key(user):
-    return user + "_groups"
+    return str(user) + "_groups"
