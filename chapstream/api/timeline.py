@@ -66,13 +66,10 @@ class PostHandler(CsRequestHandler):
 
     @tornado.web.authenticated
     @decorators.api_response
-    def delete(self):
-        post_rid = self.get_argument("post_rid")
-        post_id = self.get_argument("post_id")
+    def delete(self, post_rid, post_id):
         post = self.session.query(Post).filter_by(id=post_id).first()
         if not post:
-            return process_response(status=config.API_OK,
-                                    message="Post:%s could not be found."
+            return process_response(message="Post:%s could not be found."
                                             % post_id)
 
         # Remove the post from groups

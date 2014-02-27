@@ -16,13 +16,15 @@ from tests import utils
 
 
 class PostTest(CsBaseTestCase):
-    def test_sending_post(self):
+    def test_post(self):
         user = utils.create_test_user(username="lpms")
         group = utils.create_test_group(groupname="hadronproject")
         data = {
             'body': 'hey, how are you?',
         }
         data = json.dumps(data)
+
+        # Sending post
         with mock.patch.object(CsRequestHandler,
                                "get_secure_cookie") as m:
             m.return_value = user.name
@@ -34,7 +36,28 @@ class PostTest(CsBaseTestCase):
                        body=data,
                        method="POST")
 
-        session.rollback()
         timeline = str(user.id) + '_timeline'
         llen = redis_conn.llen(timeline)
         self.assertEqual(llen, 1)
+
+        with mock.patch.object(CsRequestHandler,
+                               "get_secure_cookie") as m:
+            m.return_value = user.name
+            timeline = self.fetch("/api/timeline/load-timeline",
+                                  method="GET")
+
+        body = json.loads(timeline.body)
+        # TODO: rename id_ to rid
+        post = body['posts'][0]
+        post_rid = post["id_"]
+        post_id = post["post_id"]
+        with mock.patch.object(CsRequestHandler,
+                               "get_secure_cookie") as m:
+            m.return_value = user.name
+            self.fetch("/api/timeline/post/%s/%s" %
+                       (post_rid, post_id),
+                       method="DELETE")
+
+        timeline = str(user.id) + '_timeline'
+        llen = redis_conn.llen(timeline)
+        self.assertEqual(llen, 0)
