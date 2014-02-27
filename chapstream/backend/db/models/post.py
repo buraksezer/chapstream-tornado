@@ -16,7 +16,7 @@ class Post(Base):
     is_draft = Column(Boolean, default=False)
     created_at = Column(DateTime, default=func.current_timestamp())
     updated_at = Column(DateTime, onupdate=func.current_timestamp())
-    user_id = Column(Integer, ForeignKey(User.id))
+    user_id = Column(Integer, ForeignKey(User.id, ondelete='CASCADE'))
 
     def __repr__(self):
         return "<Post(id: '%s', user_id: '%s')>" % \

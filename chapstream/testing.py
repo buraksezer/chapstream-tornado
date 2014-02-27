@@ -1,6 +1,5 @@
 from tornado.testing import AsyncHTTPTestCase
 
-from sqlalchemy import MetaData
 
 from chapstream.backend.db.orm import Base
 from chapstream.backend.db import session
@@ -8,7 +7,10 @@ from chapstream.app import Application
 
 
 def truncate_tables():
-    for table in Base.metadata.tables.values():
+    session.rollback()
+    tables = Base.metadata.tables.values()
+    tables.reverse()
+    for table in tables:
         session.execute(table.delete())
 
 

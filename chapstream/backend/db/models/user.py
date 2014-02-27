@@ -25,8 +25,16 @@ class User(Base):
     bio = Column(UnicodeText, nullable=True)
     sign_up_date = Column(DateTime, default=datetime.utcnow())
     last_seen = Column(DateTime, default=datetime.utcnow())
-    posts = relationship('Post', backref='user', lazy='dynamic')
-    notifications = relationship('Notification', backref='user', lazy='dynamic')
+    posts = relationship('Post',
+                         backref='user',
+                         cascade="all, delete",
+                         lazy='dynamic',
+                         passive_deletes=True)
+    notifications = relationship('Notification',
+                                 cascade="all, delete",
+                                 backref='user',
+                                 lazy='dynamic',
+                                 passive_deletes=True)
 
     def __repr__(self):
         return "<User(id:'%s', name:'%s', email:'%s')>" % \

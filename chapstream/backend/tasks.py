@@ -74,8 +74,8 @@ def post_timeline(post, receiver_users=None, receiver_groups=None):
                     group_receiver = True
                     break
 
-        if group_receiver:
-            continue
+            if group_receiver:
+                continue
 
         if receiver_users:
             if not user.name in receiver_users:

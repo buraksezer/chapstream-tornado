@@ -23,7 +23,7 @@ class PostHandler(CsRequestHandler):
 
         # Create a database record for this post on PostgreSQL database
         data = json.loads(self.request.body)
-        body = data["body"].encode('UTF-8')
+        body = data["body"].decode('UTF-8')
         new_post = Post(body=body, user=self.current_user)
         self.session.add(new_post)
         self.session.commit()
@@ -86,8 +86,6 @@ class PostHandler(CsRequestHandler):
             if self.redis_conn.hget(key, str(self.current_user.id)):
                 delete_post_from_timeline(post_rid)
 
-        return process_response(status=config.API_OK)
-
 
 class TimelineLoader(CsRequestHandler):
     @tornado.web.authenticated
@@ -108,4 +106,4 @@ class TimelineLoader(CsRequestHandler):
             post = posts[index]
             posts[index] = json.loads(post)
         posts = {"posts": posts}
-        return process_response(data=posts, status=config.API_OK)
+        return process_response(data=posts)

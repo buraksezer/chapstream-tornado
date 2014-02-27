@@ -9,8 +9,10 @@ from chapstream.backend.db.orm import Base
 group_posts = Table(
     "group_posts",
     Base.metadata,
-    Column("gp_group", Integer, ForeignKey("groups.id")),
-    Column("gp_post", Integer, ForeignKey("posts.id")),
+    Column("gp_group", Integer, ForeignKey("groups.id",
+                                           ondelete="CASCADE")),
+    Column("gp_post", Integer, ForeignKey("posts.id",
+                                          ondelete="CASCADE")),
 )
 
 
@@ -23,8 +25,12 @@ class Group(Base):
     summary = Column(UnicodeText)
     is_private = Column(Boolean, default=False)
     is_hidden = Column(Boolean, default=False)
-    posts = relationship('Post', backref='groups',
-                         secondary=group_posts, lazy='dynamic')
+    posts = relationship('Post',
+                         cascade="all,delete",
+                         backref='groups',
+                         secondary=group_posts,
+                         lazy='dynamic',
+                         passive_deletes=True)
     created_at = Column(DateTime, default=func.current_timestamp())
 
     def __repr__(self):
