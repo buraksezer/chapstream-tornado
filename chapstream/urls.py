@@ -16,6 +16,7 @@ from chapstream.api.user import RelationshipStatusHandler
 from chapstream.api.commons import RealtimeHandler
 from chapstream.api.timeline import TimelineLoader
 from chapstream.api.timeline import PostHandler
+from chapstream.api.timeline import LikeHandler
 
 # Group related handlers
 from chapstream.api.group import GroupSubscriptionHandler
@@ -31,6 +32,7 @@ FRONTEND_URLS = [
 ]
 
 API_URLS = [
+    (r"/api/like/(?P<post_id>[^\/]+)", LikeHandler),
     (r"/api/group/subscribe/(?P<group_id>[^\/]+)", GroupSubscriptionHandler),
     (r"/api/group", GroupHandler),
     (r"/api/group/(?P<group_id>[^\/]+)", GroupHandler),

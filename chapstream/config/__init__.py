@@ -28,7 +28,7 @@ else:
     # Database related settings
     POSTGRES_USERNAME = "csdbuser"
     POSTGRES_PASSWORD = "hadron"
-    POSTGRES_DATABASE = "csdatabase_test"
+    POSTGRES_DATABASE = "csdatabase"
     POSTGRES_HOSTNAME = "localhost"
 
 

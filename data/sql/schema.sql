@@ -4,7 +4,7 @@
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
-SET client_encoding = 'UTF8';
+SET client_encoding = 'SQL_ASCII';
 SET standard_conforming_strings = on;
 SET check_function_bodies = false;
 SET client_min_messages = warning;
@@ -79,6 +79,7 @@ ALTER TABLE public.notifications OWNER TO csdbuser;
 CREATE TABLE posts (
     id bigint NOT NULL,
     body text,
+    likes character varying[],
     is_draft boolean,
     created_at timestamp without time zone,
     updated_at timestamp without time zone,
@@ -238,7 +239,7 @@ ALTER TABLE ONLY users
 --
 
 ALTER TABLE ONLY group_posts
-    ADD CONSTRAINT group_posts_gp_group_fkey FOREIGN KEY (gp_group) REFERENCES groups(id);
+    ADD CONSTRAINT group_posts_gp_group_fkey FOREIGN KEY (gp_group) REFERENCES groups(id) ON DELETE CASCADE;
 
 
 --
@@ -246,7 +247,7 @@ ALTER TABLE ONLY group_posts
 --
 
 ALTER TABLE ONLY group_posts
-    ADD CONSTRAINT group_posts_gp_post_fkey FOREIGN KEY (gp_post) REFERENCES posts(id);
+    ADD CONSTRAINT group_posts_gp_post_fkey FOREIGN KEY (gp_post) REFERENCES posts(id) ON DELETE CASCADE;
 
 
 --
@@ -254,7 +255,7 @@ ALTER TABLE ONLY group_posts
 --
 
 ALTER TABLE ONLY notifications
-    ADD CONSTRAINT notifications_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id);
+    ADD CONSTRAINT notifications_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
 
 
 --
@@ -262,7 +263,7 @@ ALTER TABLE ONLY notifications
 --
 
 ALTER TABLE ONLY posts
-    ADD CONSTRAINT posts_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id);
+    ADD CONSTRAINT posts_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
 
 
 --

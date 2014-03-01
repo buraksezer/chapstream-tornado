@@ -8,6 +8,7 @@ from chapstream.testing import CsBaseTestCase
 from chapstream.backend.db.models.group import Group
 from chapstream.api import CsRequestHandler
 from chapstream.backend.db import session
+from chapstream.backend.db.models.post import Post
 
 from chapstream.redisconn import redis_conn
 from chapstream import helpers
@@ -61,3 +62,47 @@ class PostTest(CsBaseTestCase):
         timeline = str(user.id) + '_timeline'
         llen = redis_conn.llen(timeline)
         self.assertEqual(llen, 0)
+
+
+class LikeTest(CsBaseTestCase):
+    def test_like(self):
+        user = utils.create_test_user(username="lpms")
+        body = "foobarpost".decode('UTF-8')
+        post = Post(body=body, user_id=user.id)
+        session.add(post)
+        session.commit()
+
+        like_prefix = "like::"+str(post.id)
+        like_count = "like_count::"+str(post.id)
+
+        def check(result, count, bool_):
+            self.assertEqual(redis_conn.llen(like_prefix), count)
+            c = int(redis_conn.get(like_count))
+            self.assertEqual(c, count)
+
+            result = json.loads(result)
+            ul = False
+            if result["likes"]:
+                ul = user.name in result["likes"]
+
+            self.assertEqual(ul, bool_)
+
+        with mock.patch.object(CsRequestHandler,
+                               "get_secure_cookie") as m:
+            m.return_value = user.name
+            self.fetch("/api/like/%s" % post.id, body="foo",
+                       method="POST")
+
+            get_response = self.fetch("/api/like/%s"
+                                      % post.id, method="GET")
+
+        check(get_response.body, 1, True)
+
+        with mock.patch.object(CsRequestHandler,
+                               "get_secure_cookie") as m:
+            m.return_value = user.name
+            self.fetch("/api/like/%s" % post.id, method="DELETE")
+            get_response = self.fetch("/api/like/%s"
+                                      % post.id, method="GET")
+
+        check(get_response.body, 0, False)

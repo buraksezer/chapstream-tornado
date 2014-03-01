@@ -69,7 +69,8 @@ class PostHandler(CsRequestHandler):
     def delete(self, post_rid, post_id):
         post = self.session.query(Post).filter_by(id=post_id).first()
         if not post:
-            return process_response(message="Post:%s could not be found."
+            return process_response(status=config.API_FAIL,
+                                    message="Post:%s could not be found."
                                             % post_id)
 
         # Remove the post from groups
@@ -104,3 +105,83 @@ class TimelineLoader(CsRequestHandler):
             posts[index] = json.loads(post)
         posts = {"posts": posts}
         return process_response(data=posts)
+
+
+class LikeHandler(CsRequestHandler):
+    @tornado.web.authenticated
+    @decorators.api_response
+    def post(self, post_id):
+        post = self.session.query(Post).filter_by(id=post_id).first()
+        if not post:
+            return process_response(status=config.API_FAIL,
+                                    message="Post:%s could not be found."
+                                            % post_id)
+
+        if post.likes:
+            post.likes.append(self.current_user.name)
+        else:
+            post.likes = [self.current_user.name]
+
+        self.session.commit()
+
+        # Set Redis data
+        # TODO: Use for a helper for doing the following
+        like_prefix = "like::"+str(post.id)
+        like_count = "like_count::"+str(post.id)
+        if not self.redis_conn.get(like_count):
+            self.redis_conn.set(like_count, 1)
+        else:
+            self.redis_conn.incr(like_count)
+
+        length = self.redis_conn.llen(like_prefix)
+        if length == 3:
+            self.redis_conn.lpop(like_prefix)
+
+        self.redis_conn.rpush(like_prefix, self.current_user.name)
+
+    @tornado.web.authenticated
+    @decorators.api_response
+    def get(self, post_id):
+        post = self.session.query(Post).filter_by(id=post_id).first()
+        if not post:
+            return process_response(status=config.API_FAIL,
+                                    message="Post:%s could not be found."
+                                            % post_id)
+        return process_response(data={"likes": post.likes})
+
+
+    @tornado.web.authenticated
+    @decorators.api_response
+    def delete(self, post_id):
+        post = self.session.query(Post).filter_by(id=post_id).first()
+        if not post:
+            return process_response(status=config.API_FAIL,
+                                    message="Post:%s could not be found."
+                                            % post_id)
+
+        # TODO: Use a suitable compare method, use sqlalchemy
+        if self.current_user.name in post.likes:
+            # FIXME: This is an ungodly hack. Find a better way
+            index = post.likes.index(self.current_user.name)
+            likes = post.likes
+            del likes[index]
+            if not likes:
+                post.likes = None
+            else:
+                post.likes = likes
+            self.session.commit()
+
+            # Remove from Redis
+            like_prefix = "like::"+str(post.id)
+            # TODO: Use config module to get default values
+            items = self.redis_conn.lrange(like_prefix, 0, 3)
+            if self.current_user.name in items:
+                like_count = "like_count::"+str(post.id)
+                self.redis_conn.lrem(like_prefix,
+                                     self.current_user.name)
+                self.redis_conn.decr(like_count)
+        else:
+            # TODO: write a suitable warning message
+            return process_response(status=config.API_WARN,
+                                    message="Post:%s a warning message"
+                                            % post_id)
