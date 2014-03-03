@@ -17,6 +17,7 @@ from chapstream.api.commons import RealtimeHandler
 from chapstream.api.timeline import TimelineLoader
 from chapstream.api.timeline import PostHandler
 from chapstream.api.timeline import LikeHandler
+from chapstream.api.comment import CommentHandler
 
 # Group related handlers
 from chapstream.api.group import GroupSubscriptionHandler
@@ -32,6 +33,8 @@ FRONTEND_URLS = [
 ]
 
 API_URLS = [
+    (r"/api/comment/(?P<post_id>[^\/]+)", CommentHandler),
+    (r"/api/comment-delete/(?P<comment_id>[^\/]+)", CommentHandler),
     (r"/api/like/(?P<post_id>[^\/]+)", LikeHandler),
     (r"/api/group/subscribe/(?P<group_id>[^\/]+)", GroupSubscriptionHandler),
     (r"/api/group", GroupHandler),

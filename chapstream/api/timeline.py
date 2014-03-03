@@ -182,6 +182,6 @@ class LikeHandler(CsRequestHandler):
                 self.redis_conn.decr(like_count)
         else:
             # TODO: write a suitable warning message
-            return process_response(status=config.API_WARN,
+            return process_response(status=config.API_WARNING,
                                     message="Post:%s a warning message"
                                             % post_id)

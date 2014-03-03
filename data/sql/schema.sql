@@ -4,7 +4,7 @@
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
-SET client_encoding = 'SQL_ASCII';
+SET client_encoding = 'UTF8';
 SET standard_conforming_strings = on;
 SET check_function_bodies = false;
 SET client_min_messages = warning;
@@ -28,6 +28,23 @@ SET search_path = public, pg_catalog;
 SET default_tablespace = '';
 
 SET default_with_oids = false;
+
+--
+-- Name: comments; Type: TABLE; Schema: public; Owner: csdbuser; Tablespace: 
+--
+
+CREATE TABLE comments (
+    id bigint NOT NULL,
+    body text,
+    likes character varying[],
+    created_at timestamp without time zone,
+    updated_at timestamp without time zone,
+    user_id integer,
+    post_id integer
+);
+
+
+ALTER TABLE public.comments OWNER TO csdbuser;
 
 --
 -- Name: group_posts; Type: TABLE; Schema: public; Owner: csdbuser; Tablespace: 
@@ -88,6 +105,20 @@ CREATE TABLE posts (
 
 
 ALTER TABLE public.posts OWNER TO csdbuser;
+
+--
+-- Name: seq_comment_id; Type: SEQUENCE; Schema: public; Owner: csdbuser
+--
+
+CREATE SEQUENCE seq_comment_id
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.seq_comment_id OWNER TO csdbuser;
 
 --
 -- Name: seq_group_id; Type: SEQUENCE; Schema: public; Owner: csdbuser
@@ -195,6 +226,14 @@ CREATE TABLE users (
 ALTER TABLE public.users OWNER TO csdbuser;
 
 --
+-- Name: comments_pkey; Type: CONSTRAINT; Schema: public; Owner: csdbuser; Tablespace: 
+--
+
+ALTER TABLE ONLY comments
+    ADD CONSTRAINT comments_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: groups_pkey; Type: CONSTRAINT; Schema: public; Owner: csdbuser; Tablespace: 
 --
 
@@ -232,6 +271,22 @@ ALTER TABLE ONLY user_relations
 
 ALTER TABLE ONLY users
     ADD CONSTRAINT users_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: comments_post_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: csdbuser
+--
+
+ALTER TABLE ONLY comments
+    ADD CONSTRAINT comments_post_id_fkey FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE;
+
+
+--
+-- Name: comments_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: csdbuser
+--
+
+ALTER TABLE ONLY comments
+    ADD CONSTRAINT comments_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
 
 
 --

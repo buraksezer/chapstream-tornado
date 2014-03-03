@@ -48,8 +48,14 @@ POST_SOURCE_REPOST = "repost"
 API_OK = "OK"
 API_ERROR = "ERROR"
 API_FAIL = "FAIL"
+API_WARNING = "WARNING"
 
 # Redis Configuration
 REDIS_HOST = "localhost"
 REDIS_PORT = 6379
 REDIS_PASSWORD = None
+
+# Realtime content types
+REALTIME_COMMENT = "COMMENT"
+REALTIME_POST = "POST"
+REALTIME_LIKE = "LIKE"

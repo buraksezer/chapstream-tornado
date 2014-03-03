@@ -21,7 +21,8 @@ except NameError:
 TEST_MODULES = [
     'tests.test_user',
     'tests.test_group',
-    'tests.test_post'
+    'tests.test_post',
+    'tests.test_comment'
 ]
 
 

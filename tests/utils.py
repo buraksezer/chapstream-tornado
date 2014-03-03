@@ -5,7 +5,7 @@ import hashlib
 from chapstream.backend.db.orm import session
 from chapstream.backend.db.models.user import User
 from chapstream.backend.db.models.group import Group
-
+from chapstream.backend.db.models.post import Post
 
 RANDINT_MAX = 1000
 RANDINT_MIN = 0
@@ -43,3 +43,11 @@ def create_test_group(groupname=None):
     session.commit()
 
     return group
+
+def create_test_post(user_id):
+    body = "foobarpost".decode('UTF-8')
+    post = Post(body=body, user_id=user_id)
+    session.add(post)
+    session.commit()
+
+    return post

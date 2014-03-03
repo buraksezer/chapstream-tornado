@@ -12,6 +12,7 @@ from chapstream.backend.db import session
 from chapstream.backend.db.models.user import User, UserRelation
 from chapstream.backend.db.models.group import Group
 from chapstream.backend.db.models.notification import Notification
+from chapstream.backend.db.models.comment import Comment
 
 
 logging.basicConfig(level=logging.INFO)
@@ -167,11 +168,6 @@ def block_user(user_id, chap_id):
 
 @kuyruk.task
 def push_notification(user_ids, message):
-    redis_conn = redis.Redis(
-        host=config.REDIS_HOST,
-        port=config.REDIS_PORT
-    )
-
     for user_id in user_ids:
         user = User.get(user_id)
         if not user:
@@ -190,3 +186,29 @@ def push_notification(user_ids, message):
         except redis.ConnectionError as err:
             logger.error('Connection error: %s', err)
             # TODO: Handle failed tasks
+
+
+@kuyruk.task
+def push_comment(comment):
+    def push(user_id, rule=None):
+        try:
+            channel = str(user_id) + '_channel'
+            comment["rule"] = rule
+            comment_json = json.dumps(comment)
+            logger.info('Sending a comment to %s', channel)
+            redis_conn.publish(channel, comment_json)
+        except redis.ConnectionError as err:
+            logger.error('Connection error: %s', err)
+            # TODO: Handle failed tasks
+
+    intr_users = Comment.query.with_entities(Comment.user_id).\
+        filter_by(post_id=comment["post_id"]).all()
+    intr_users = set(intr_users)
+    for (user_id,) in intr_users:
+        push(user_id, rule=config.REALTIME_COMMENT)
+
+    relations = UserRelation.query.with_entities(UserRelation.user_id).\
+        filter_by(chap_id=comment['user_id'],
+                  is_banned=False).all()
+    for (user_id,) in relations:
+        push(user_id)

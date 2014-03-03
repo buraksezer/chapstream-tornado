@@ -35,6 +35,11 @@ class User(Base):
                                  backref='user',
                                  lazy='dynamic',
                                  passive_deletes=True)
+    comments = relationship('Comment',
+                            backref='user',
+                            cascade="all, delete",
+                            lazy='dynamic',
+                            passive_deletes=True)
 
     def __repr__(self):
         return "<User(id:'%s', name:'%s', email:'%s')>" % \
