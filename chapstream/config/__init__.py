@@ -21,6 +21,9 @@ if os.environ.get("CHAPSTREAM_ENV") == "TEST":
     POSTGRES_PASSWORD = "hadron"
     POSTGRES_DATABASE = "csdatabase_test"
     POSTGRES_HOSTNAME = "localhost"
+
+    # Redis DB name for testing
+    REDIS_DB = 1
 else:
     # Tornado related settings
     tornado_server_settings = tornado_settings_template
@@ -31,7 +34,8 @@ else:
     POSTGRES_DATABASE = "csdatabase"
     POSTGRES_HOSTNAME = "localhost"
 
-
+    REDIS_DB = 0
+    
 REDIS_KEY_DELIMITER = ":"
 
 TIMELINE_MAX_POST_COUNT = 800
