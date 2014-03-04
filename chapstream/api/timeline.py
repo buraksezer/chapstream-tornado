@@ -3,6 +3,7 @@ import logging
 import calendar
 
 import tornado.web
+from sqlalchemy import update
 
 from chapstream import helpers
 from chapstream import config
@@ -126,9 +127,8 @@ class LikeHandler(CsRequestHandler):
         self.session.commit()
 
         # Set Redis data
-        # TODO: Use for a helper for doing the following
         like_prefix = helpers.like_prefix(post_id)
-        like_count_key= helpers.like_count_key(post_id)
+        like_count_key = helpers.like_count_key(post_id)
         if not self.redis_conn.get(like_count_key):
             self.redis_conn.set(like_count_key, 1)
         else:
@@ -160,16 +160,12 @@ class LikeHandler(CsRequestHandler):
                                     message="Post:%s could not be found."
                                             % post_id)
 
-        # TODO: Use a suitable compare method, use sqlalchemy
         if self.current_user.name in post.likes:
-            # FIXME: This is an ungodly hack. Find a better way
-            index = post.likes.index(self.current_user.name)
-            likes = post.likes
-            del likes[index]
-            if not likes:
-                post.likes = None
-            else:
-                post.likes = likes
+            likes = post.likes.remove(self.current_user.name)
+            query = update(Post).where(Post.id == post_id).\
+                values(likes=likes)
+            self.session.execute(query)
+
             self.session.commit()
 
             # Remove from Redis
