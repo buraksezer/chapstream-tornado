@@ -5,6 +5,7 @@ import calendar
 import tornado.web
 
 from chapstream import config
+from chapstream import helpers
 from chapstream.api import decorators
 from chapstream.api import CsRequestHandler, process_response
 from chapstream.backend.db.models.post import Post
@@ -56,7 +57,7 @@ class CommentHandler(CsRequestHandler):
         # Comment summary is a list on Redis that stores
         # first two comments and last one to render the user timeline
         # as fast as possible.
-        comment_summary = "cs::" + str(post.id)
+        comment_summary = helpers.comment_summary_key(post_id)
         length = self.redis_conn.llen(comment_summary)
         comment_json = json.dumps(comment)
         if length in (0, 1):
@@ -70,7 +71,7 @@ class CommentHandler(CsRequestHandler):
 
         # TODO: make a helper func. for this
         if post.user_id != self.current_user.id:
-            userintr_hash = "userintr:" + str(self.current_user.id)
+            userintr_hash = helpers.userintr_hash(self.current_user.id)
             val = config.REALTIME_COMMENT+str(created_at)
             self.redis_conn.hset(userintr_hash, str(post.id), val)
             #rel = self.session.query(UserRelation).filter_by(
@@ -121,7 +122,7 @@ class CommentHandler(CsRequestHandler):
                                             % comment_id)
 
         post_id = comment.post.id
-        comment_summary = "cs::" + str(post_id)
+        comment_summary = helpers.comment_summary_key(post_id)
         items = self.redis_conn.lrange(comment_summary, 0, 3)
         for item in items:
             comment_json = json.loads(item)
@@ -137,6 +138,6 @@ class CommentHandler(CsRequestHandler):
         ).count()
 
         if not other_comments:
-            userintr_hash = "userintr:" + str(self.current_user.id)
+            userintr_hash = helpers.userintr_hash(self.current_user.id)
             self.redis_conn.hdel(userintr_hash, str(post_id))
 

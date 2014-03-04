@@ -37,7 +37,7 @@ class PostTest(CsBaseTestCase):
                        body=data,
                        method="POST")
 
-        timeline = str(user.id) + '_timeline'
+        timeline = helpers.user_timeline(user.id)
         llen = redis_conn.llen(timeline)
         self.assertEqual(llen, 1)
 
@@ -48,9 +48,8 @@ class PostTest(CsBaseTestCase):
                                   method="GET")
 
         body = json.loads(timeline.body)
-        # TODO: rename id_ to rid
         post = body['posts'][0]
-        post_rid = post["id_"]
+        post_rid = post["rid"]
         post_id = post["post_id"]
         with mock.patch.object(CsRequestHandler,
                                "get_secure_cookie") as m:
@@ -59,7 +58,7 @@ class PostTest(CsBaseTestCase):
                        (post_rid, post_id),
                        method="DELETE")
 
-        timeline = str(user.id) + '_timeline'
+        timeline = helpers.user_timeline(user.id)
         llen = redis_conn.llen(timeline)
         self.assertEqual(llen, 0)
 
@@ -72,8 +71,8 @@ class LikeTest(CsBaseTestCase):
         session.add(post)
         session.commit()
 
-        like_prefix = "like::"+str(post.id)
-        like_count = "like_count::"+str(post.id)
+        like_prefix = helpers.like_prefix(post.id)
+        like_count = helpers.like_count_key(post.id)
 
         def check(result, count, bool_):
             self.assertEqual(redis_conn.llen(like_prefix), count)

@@ -4,6 +4,7 @@ import calendar
 
 import tornado.web
 
+from chapstream import helpers
 from chapstream import config
 from chapstream.api import decorators
 from chapstream.api import CsRequestHandler, process_response
@@ -80,7 +81,7 @@ class PostHandler(CsRequestHandler):
 
         # Remove the post from user timelines
         if post_rid:
-            key = "post_rid::" + post_rid
+            key = helpers.post_rid_key(post_rid)
             if self.redis_conn.hget(key, str(self.current_user.id)):
                 delete_post_from_timeline(post_rid)
 
@@ -92,7 +93,7 @@ class TimelineLoader(CsRequestHandler):
         """
         Simply, read user's timeline on redis. Don't hit hard drive.
         """
-        timeline = str(self.current_user.id) + '_timeline'
+        timeline = helpers.user_timeline(self.current_user.id)
         length = self.redis_conn.llen(timeline)
         offset = length - TIMELINE_CHUNK_SIZE
         posts = self.redis_conn.lrange(timeline, offset, length)
@@ -126,12 +127,12 @@ class LikeHandler(CsRequestHandler):
 
         # Set Redis data
         # TODO: Use for a helper for doing the following
-        like_prefix = "like::"+str(post.id)
-        like_count = "like_count::"+str(post.id)
-        if not self.redis_conn.get(like_count):
-            self.redis_conn.set(like_count, 1)
+        like_prefix = helpers.like_prefix(post_id)
+        like_count_key= helpers.like_count_key(post_id)
+        if not self.redis_conn.get(like_count_key):
+            self.redis_conn.set(like_count_key, 1)
         else:
-            self.redis_conn.incr(like_count)
+            self.redis_conn.incr(like_count_key)
 
         length = self.redis_conn.llen(like_prefix)
         if length == 3:
@@ -172,11 +173,11 @@ class LikeHandler(CsRequestHandler):
             self.session.commit()
 
             # Remove from Redis
-            like_prefix = "like::"+str(post.id)
+            like_prefix = helpers.like_prefix(post_id)
             # TODO: Use config module to get default values
             items = self.redis_conn.lrange(like_prefix, 0, 3)
             if self.current_user.name in items:
-                like_count = "like_count::"+str(post.id)
+                like_count = helpers.like_count_key(post_id)
                 self.redis_conn.lrem(like_prefix,
                                      self.current_user.name)
                 self.redis_conn.decr(like_count)

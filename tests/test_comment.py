@@ -33,11 +33,11 @@ class CommentTest(CsBaseTestCase):
                                        body=data,
                                        method="POST")
 
-        userintr_hash = "userintr:" + str(user2.id)
+        userintr_hash = helpers.userintr_hash(user2.id)
         userintr_res = redis_conn.hget(userintr_hash, str(post.id))
         self.assertNotEqual(userintr_res, None)
 
-        comment_summary = "cs::" + str(post.id)
+        comment_summary = helpers.comment_summary_key(post.id)
         self.assertEqual(redis_conn.llen(comment_summary), 1)
 
         with mock.patch.object(CsRequestHandler,

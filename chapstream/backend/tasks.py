@@ -4,15 +4,15 @@ import logging
 import redis
 from kuyruk import Kuyruk
 
-from chapstream import config
-from chapstream.redisconn import redis_conn
-from chapstream.config import task_queue
-from chapstream import helpers
 from chapstream.backend.db import session
 from chapstream.backend.db.models.user import User, UserRelation
 from chapstream.backend.db.models.group import Group
 from chapstream.backend.db.models.notification import Notification
 from chapstream.backend.db.models.comment import Comment
+from chapstream import config
+from chapstream.redisconn import redis_conn
+from chapstream.config import task_queue
+from chapstream import helpers
 
 
 logging.basicConfig(level=logging.INFO)
@@ -23,14 +23,14 @@ kuyruk = Kuyruk(config.task_queue)
 
 def push_to_timeline(user, post):
     try:
-        channel = str(user.id) + '_channel'
-        timeline = str(user.id) + '_timeline'
-        id_ = str(post["id_"])
+        channel = helpers.user_channel(user.id)
+        timeline = helpers.user_timeline(user.id)
+        rid = str(post["rid"])
         post = json.dumps(post)
         # Push user's timeline the current post
         redis_conn.rpush(timeline, post)
         # Set user-post relation to inspect posts while removing
-        post_rid = "post_rid::" + id_
+        post_rid = helpers.post_rid_key(rid)
         redis_conn.hset(post_rid, str(user.id), config.POST_SOURCE_DIRECT)
         # TODO: Check size of the list and rotate it if
         # required.
@@ -45,7 +45,7 @@ def push_to_timeline(user, post):
 @kuyruk.task
 def post_timeline(post, receiver_users=None, receiver_groups=None):
     # Generate a Redis timeline post id
-    post["id_"] = redis_conn.incr(config.POST_RID_HEAD_KEY)
+    post["rid"] = redis_conn.incr(config.POST_RID_HEAD_KEY)
 
     if not receiver_groups:
         owner = User.get(post['user_id'])
@@ -111,16 +111,16 @@ def post_to_group(group_id, post):
 
 @kuyruk.task
 def delete_post_from_timeline(post_rid):
-    key = "post_rid::" + post_rid
+    key = helpers.post_rid_key(post_rid)
     user_ids = redis_conn.hgetall(key)
     for user_id in user_ids:
-        user_timeline = user_id + "_timeline"
+        user_timeline = helpers.user_timeline(user_id)
         posts = redis_conn.lrange(user_timeline, 0,
                                   config.TIMELINE_MAX_POST_COUNT)
         logger.info(posts)
         for post in posts:
             post_json = json.loads(post)
-            if str(post_json["id_"]) == post_rid:
+            if str(post_json["rid"]) == post_rid:
                 if not redis_conn.lrem(user_timeline, post):
                     logger.warning("POST_RID:%s could not be found or removed. User %s",
                                    post_rid, user_id)
@@ -147,9 +147,9 @@ def block_user(user_id, chap_id):
             if post_json["user_id"] == blocked_user.id:
                 logger.info("Remove post from: %s. Post: %s"
                             % (blocked_user.name, post))
+                post_rid = str(post_json["rid"])
                 if redis_conn.lrem(timeline, post):
-                    post_rid = str(post_json["id_"])
-                    key = "post_rid::" + post_rid
+                    key = helpers.post_rid_key(post_rid)
                     if not redis_conn.hdel(key, str(blocked_user.id)):
                         logger.warning("User:%s could not be removed from POST_RID:%s",
                                        user_id, post_rid)
@@ -158,11 +158,11 @@ def block_user(user_id, chap_id):
                                    post_rid)
 
     # Remove posts from the user who blocks a user.
-    user_timeline = str(user.id) + '_timeline'
+    user_timeline = helpers.user_timeline(user.id)
     remove_posts(user_timeline, chap)
 
     # Remove posts from the blocked user.
-    chap_timeline = str(chap.id) + '_timeline'
+    chap_timeline = helpers.user_timeline(user.id)
     remove_posts(chap_timeline, user)
 
 
@@ -180,7 +180,7 @@ def push_notification(user_ids, message):
         session.commit()
 
         try:
-            channel = str(user.id) + '_channel'
+            channel = helpers.user_channel(user_id)
             message = json.dumps(message)
             redis_conn.publish(channel, message)
         except redis.ConnectionError as err:
@@ -192,7 +192,7 @@ def push_notification(user_ids, message):
 def push_comment(comment):
     def push(user_id, rule=None):
         try:
-            channel = str(user_id) + '_channel'
+            channel = helpers.user_channel(user_id)
             comment["rule"] = rule
             comment_json = json.dumps(comment)
             logger.info('Sending a comment to %s', channel)
