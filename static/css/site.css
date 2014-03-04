@@ -2,7 +2,7 @@ html,
 body {
   height: 100%;
   font-family: 'Open Sans', sans-serif !important;
-  background: #eae8e4;
+  background: #fafafa;
 }
 
 #chapstream-container {
@@ -30,19 +30,29 @@ textarea {
 }
 
 #posts {
-    border: 1px solid #e6e3e1;
-    border-bottom: 0;
-    background: #FFFFFF;
+    min-height: 20px;
+    margin-bottom: 20px;
+    background-color: #FFFFFF;
+    border: 1px solid #e8e8e8;
+    border-radius: 0;
+    -webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
 }
 
 .post {
-    border-bottom: 1px solid #e6e3e1;
-    background: #FFFFFF;
+    border-bottom: 1px solid #f5f3f1;
 }
 
-.post-metadata,
+.post:hover {
+    background: #F4F9FC;
+}
+
+.post-metadata {
+    padding: 10px 10px 1px 10px;
+}
+
 .post-content {
-    margin: 10px;
+    padding: 1px 10px 10px 10px;
 }
 
 .profile-header {
@@ -57,4 +67,5 @@ textarea {
 
 .post-metadata .createdat {
     font-weight: lighter;
+    font-size: 10px;
 }

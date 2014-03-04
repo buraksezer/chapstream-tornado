@@ -4,6 +4,7 @@ import tornadoredis
 import tornado.web
 
 from chapstream import config
+from chapstream import helpers
 from chapstream.api import CsWebSocketHandler
 
 logger = logging.getLogger(__name__)
@@ -20,9 +21,10 @@ class RealtimeHandler(CsWebSocketHandler):
         logger.info('WebSocket opened.')
         self.client = tornadoredis.Client(
             host=config.REDIS_HOST,
-            port=config.REDIS_PORT
+            port=config.REDIS_PORT,
+            selected_db=config.REDIS_DB
         )
-        self.channel = str(self.current_user.id) + '_channel'
+        self.channel = helpers.user_channel(self.current_user.id)
         self.client.connect()
         yield tornado.gen.Task(self.client.subscribe, self.channel)
         self.client.listen(self.on_message)

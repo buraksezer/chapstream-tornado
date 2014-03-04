@@ -7,9 +7,6 @@ var ChapStreamDirectives = angular.module('ChapStreamDirectives', []);
 ChapStreamDirectives.directive('sendPost', function($http) {
     return {
         restrict: 'A',
-        scope: {
-            inProgress: '='
-        },
         link: function (scope, elem, element) {
             elem.bind('click', function (e) {
                 scope.inProgress = true;
