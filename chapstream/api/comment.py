@@ -1,3 +1,4 @@
+import os
 import json
 import logging
 import calendar
@@ -16,10 +17,15 @@ from chapstream.backend.tasks import push_comment
 logger = logging.getLogger(__name__)
 
 
+
 class CommentHandler(CsRequestHandler):
     @tornado.web.authenticated
     @decorators.api_response
     def post(self, post_id):
+        if not self.request.body:
+            return process_response(status=config.API_FAIL,
+                                    message="You must send a comment body.")
+
         post = self.session.query(Post).filter_by(
             id=post_id).first()
         if not post:
@@ -33,7 +39,7 @@ class CommentHandler(CsRequestHandler):
         # Create a database record for this comment on
         # PostgreSQL database
         data = json.loads(self.request.body)
-        body = data["body"].decode('UTF-8')
+        body = data["body"].encode('UTF8')
         new_comment = Comment(
             body=body,
             post=post,
@@ -44,12 +50,10 @@ class CommentHandler(CsRequestHandler):
 
         created_at = calendar.timegm(new_comment.created_at.utctimetuple())
         comment = {
-            'type': config.REALTIME_COMMENT,
             'post_id': post.id,
             'id': new_comment.id,
             'body': body,
             'created_at': created_at,
-            'user_id': self.current_user.id,
             'name': self.current_user.name,
             'fullname': self.current_user.fullname
         }
@@ -69,21 +73,13 @@ class CommentHandler(CsRequestHandler):
                         length -= 1
             self.redis_conn.rpush(comment_summary, comment_json)
 
-        # TODO: make a helper func. for this
         if post.user_id != self.current_user.id:
             userintr_hash = helpers.userintr_hash(self.current_user.id)
             val = config.REALTIME_COMMENT+str(created_at)
             self.redis_conn.hset(userintr_hash, str(post.id), val)
-            #rel = self.session.query(UserRelation).filter_by(
-            #    user_id=self.current_user.id, chap_id=post.id).first()
-            #if not rel:
-            #    intr_hash = "intr:" + str(post.id)
-            #    self.redis_conn.hset(intr_hash,
-            #                         str(self.current_user.id),
-            #                         config.REALTIME_COMMENT)
 
         # Send a task for realtime interaction
-        push_comment(comment)
+        push_comment(comment, self.current_user.id)
         data = {'comment': comment}
         return process_response(data=data)
 
@@ -97,19 +93,30 @@ class CommentHandler(CsRequestHandler):
                                     message="Post:%s could not be found."
                                             % post_id)
         result = []
-        for comment in post.comments:
-            created_at = calendar.timegm(comment.created_at.utctimetuple())
-            comment_dict = {
-                'id': comment.id,
-                'body': comment.body,
-                'created_at': created_at,
-                'user_id': comment.user.id,
-                'name': comment.user.name,
-                'fullname': comment.user.fullname
-            }
-            result.append(comment_dict)
+        path = os.path.basename(self.request.path)
+        if path == "all":
+            for comment in post.comments:
+                created_at = calendar.timegm(comment.created_at.utctimetuple())
+                comment_dict = {
+                    'id': comment.id,
+                    'body': comment.body,
+                    'created_at': created_at,
+                    'user_id': comment.user.id,
+                    'name': comment.user.name,
+                    'fullname': comment.user.fullname
+                }
+                result.append(comment_dict)
+            data = {"comments": result}
+        else:
+            comment_summary = helpers.comment_summary_key(post_id)
+            comments = self.redis_conn.lrange(comment_summary, 0, 3)
+            for comment in comments:
+                comment = json.loads(comment)
+                result.append(comment)
+            count = Comment.query.filter_by(post_id=post_id).count()
+            data = {"comments": result, "count": count}
 
-        return process_response(data={"comments": result})
+        return process_response(data=data)
 
     @tornado.web.authenticated
     @decorators.api_response

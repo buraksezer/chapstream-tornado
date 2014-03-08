@@ -13,11 +13,12 @@ angular.module('ChapStreamServices', []).factory('InitService', function() {
 
             ws.onmessage = function(e) {
                 var data = jQuery.parseJSON(e.data);
-                console.log(data);
-                if (data['event'] === 'subscription_notify') {
+                if (data['TYPE'] === 'SUBSCRIPTION_NOTIFY') {
                     console.log(data);
-                } else {
+                } else if (data['type'] === 'POST') {
                     $('#new-post, #posts').trigger("new_post_event", data);
+                } else if (data['type'] === 'COMMENT') {
+                    $('#chapstream-timeline').trigger("new_comment_event", data);
                 }
             }
         }

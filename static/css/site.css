@@ -22,7 +22,7 @@ textarea {
 }
 
 #chapstream-timeline form {
-    margin-bottom: 50px;
+    margin-bottom: 30px;
 }
 
 #chapstream-timeline #post-form {
@@ -43,16 +43,17 @@ textarea {
     border-bottom: 1px solid #f5f3f1;
 }
 
-.post:hover {
+/*.post:hover {
     background: #F4F9FC;
-}
+} */
 
 .post-metadata {
     padding: 10px 10px 1px 10px;
 }
 
 .post-content {
-    padding: 1px 10px 10px 10px;
+    font-size: 13px;
+    padding: 1px 10px 4px 10px;
 }
 
 .profile-header {
@@ -68,4 +69,109 @@ textarea {
 .post-metadata .createdat {
     font-weight: lighter;
     font-size: 10px;
+}
+
+.post-form-control {
+    display: none;
+}
+
+.post-char-count {
+    line-height: 30px;
+    margin-right: 10px;
+    font-weight: lighter;
+    font-size: 12px;
+}
+
+.chapstream-rightbar {
+    padding: 10px;
+    min-height: 20px;
+    margin-top: 10px;
+    background-color: #FFFFFF;
+    border: 1px solid #e8e8e8;
+    border-radius: 0;
+    -webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+}
+
+.gravatar-rightbar {
+    height: 50px;
+    width: 50px;
+}
+
+.rightbar-profile .user {
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.horizontal-ul {
+    list-style: none;
+    padding-left: 0;
+    min-height: 50px;
+}
+
+.horizontal-ul li {
+    margin-left: 5px;
+    display: inline;
+    float: left;
+}
+
+.post-footer ul {
+    font-size: 13px;
+    font-weight: lighter;
+    min-height: 20px;
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+.post-social {
+    font-size: 13px;
+    padding: 0px 10px 10px 10px;
+}
+
+.comment {
+    padding-top: 3px;
+    padding-bottom: 3px;
+}
+.comment-cancel {
+    line-height: 30px;
+    margin-left: 10px;
+    font-weight: lighter;
+    font-size: 12px;
+}
+
+.comment-box {
+    display: none;
+    margin-top: 5px;
+}
+
+.comment-form {
+    margin-bottom: 10px;
+}
+
+.comment-form-control {
+    padding-bottom: 1px;
+}
+
+.comment-char-count {
+    line-height: 30px;
+    font-weight: lighter;
+    font-size: 12px;
+}
+
+.comment-content {
+    margin-left: 21px;
+    margin-top: -18px;
+}
+
+.comment-box-seperator {
+    margin-bottom: 5px;
+}
+
+.more-comments {
+    padding-bottom: 6px;
+    margin-left: 20px;
+}
+
+.post-footer .horizontal-ul {
+    margin-bottom: 0;
 }

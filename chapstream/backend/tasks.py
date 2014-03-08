@@ -3,6 +3,7 @@ import logging
 
 import redis
 from kuyruk import Kuyruk
+from sqlalchemy import and_
 
 from chapstream.backend.db import session
 from chapstream.backend.db.models.user import User, UserRelation
@@ -26,6 +27,7 @@ def push_to_timeline(user, post):
         channel = helpers.user_channel(user.id)
         timeline = helpers.user_timeline(user.id)
         rid = str(post["rid"])
+        post["type"] = config.REALTIME_POST
         post = json.dumps(post)
         # Push user's timeline the current post
         redis_conn.rpush(timeline, post)
@@ -117,7 +119,6 @@ def delete_post_from_timeline(post_rid):
         user_timeline = helpers.user_timeline(user_id)
         posts = redis_conn.lrange(user_timeline, 0,
                                   config.TIMELINE_MAX_POST_COUNT)
-        logger.info(posts)
         for post in posts:
             post_json = json.loads(post)
             if str(post_json["rid"]) == post_rid:
@@ -189,26 +190,24 @@ def push_notification(user_ids, message):
 
 
 @kuyruk.task
-def push_comment(comment):
-    def push(user_id, rule=None):
+def push_comment(comment, u_id):
+    intr_users = Comment.query.with_entities(Comment.user_id).filter(
+        and_(Comment.post_id == comment["post_id"],
+             Comment.user_id != u_id)
+    ).all()
+    relations = UserRelation.query.with_entities(UserRelation.user_id).\
+        filter_by(chap_id=u_id,
+                  is_banned=False).all()
+
+    user_ids = intr_users + relations
+    user_ids = set(user_ids)
+    for (user_id,) in user_ids:
         try:
             channel = helpers.user_channel(user_id)
-            comment["rule"] = rule
+            comment["type"] = config.REALTIME_COMMENT
             comment_json = json.dumps(comment)
             logger.info('Sending a comment to %s', channel)
             redis_conn.publish(channel, comment_json)
         except redis.ConnectionError as err:
             logger.error('Connection error: %s', err)
             # TODO: Handle failed tasks
-
-    intr_users = Comment.query.with_entities(Comment.user_id).\
-        filter_by(post_id=comment["post_id"]).all()
-    intr_users = set(intr_users)
-    for (user_id,) in intr_users:
-        push(user_id, rule=config.REALTIME_COMMENT)
-
-    relations = UserRelation.query.with_entities(UserRelation.user_id).\
-        filter_by(chap_id=comment['user_id'],
-                  is_banned=False).all()
-    for (user_id,) in relations:
-        push(user_id)

@@ -16,9 +16,11 @@ ChapStreamDirectives.directive('sendPost', function($http) {
                     function(data, status) {
                         if (status === 200){
                             form.val('');
-                            form.trigger('autosize.resize');
+                            form.trigger('autosize.destroy');
                             /* This should be a constant value */
                             scope.$parent.restCharCount = 2000;
+                            scope.restCharCount = 2000;
+                            form.trigger('focusout');
                         }
                     }
                 );
@@ -30,8 +32,18 @@ ChapStreamDirectives.directive('sendPost', function($http) {
 ChapStreamDirectives.directive('autosize', function() {
     return {
         link: function(scope, elem, element) {
-            elem.bind('click', function(e) {
-                elem.autosize();
+            elem.bind('focusin', function(e) {
+                elem.autosize({className: 'post-box', append: "\n\n\n"});
+                scope.placeholder = element.placeholder;
+                $(this).attr('placeholder','');
+                $('.post-form-control').css('display', 'block');
+            });
+            elem.bind('focusout', function(e) {
+                if (scope.restCharCount === 2000) {
+                    $('#post-form').trigger('autosize.destroy');
+                    $(this).attr('placeholder', scope.placeholder);
+                    $('.post-form-control').css('display', 'none');
+                }
             });
         }
     }
@@ -202,6 +214,109 @@ ChapStreamDirectives.directive('unblock', function($http, $routeParams) {
                         }
                     }
                 );
+            });
+        }
+    }
+});
+
+/* Comment Related Directives */
+ChapStreamDirectives.directive('showCommentBox', function() {
+    return {
+        link: function(scope, elem, element) {
+            elem.bind('click', function(e) {
+                $(elem).closest('.post').find(".comment-box").css("display", "block");
+            });
+        }
+    }
+});
+
+ChapStreamDirectives.directive('autosizeComment', function() {
+    return {
+        link: function(scope, elem, element) {
+            elem.bind('focusin', function(e) {
+                elem.autosize();
+                scope.placeholder = element.placeholder;
+                $(this).attr('placeholder','');
+            });
+            elem.bind('focusout', function(e) {
+                if (scope.restCharCount === 2000) {
+                    $('#post-form').trigger('autosize.destroy');
+                    $(this).attr('placeholder', scope.placeholder);
+                }
+            });
+        }
+    }
+});
+
+ChapStreamDirectives.directive('commentCancel', function() {
+    return {
+        link: function(scope, elem, element) {
+            elem.bind('click', function(e) {
+                var commentbox = $(elem).closest('.post').find(".comment-box");
+                $(commentbox).css("display", "none");
+            });
+        }
+    }
+});
+
+ChapStreamDirectives.directive('postComment', function($http) {
+    return {
+        link: function(scope, elem, element) {
+            elem.bind('click', function(e) {
+                var commentElem = $(elem).closest('.post').find(".comment-form");
+                // FIX empty commentElem
+                $http.post("/api/comment/"+scope.post.post_id, {body: commentElem.val()}).success(
+                    function(data) {
+                        if (data.status === "OK") {
+                            scope.post.comments.push(data.comment);
+                            commentElem.val('');
+                            console.log(data);
+                            console.log($(elem).closest('.comment-form-control').find('.comment-cancel'));
+                            var cancelLink = $(elem).closest('.comment-form-control').find('.comment-cancel');
+                            cancelLink.trigger("click");
+                        }
+                    }
+                );
+                var commentElem = $(elem).closest('.post').find(".comment-form");
+            });
+        }
+    }
+});
+
+ChapStreamDirectives.directive('moreComments', function($http) {
+    return {
+        link: function(scope, elem, element) {
+            elem.bind('click', function(e) {
+                $http.get('/api/comment/'+scope.$parent.post.post_id+"/all").success(
+                    function(data, status) {
+                        if (data.status == "OK") {
+                            scope.safeApply(function() {
+                                scope.$parent.post.comments = [];
+                                scope.$parent.post.comments = data.comments;
+                                scope.$parent.post.more_comment_count = undefined;
+                            });
+                        }
+                    }
+                );
+            });
+        }
+    }
+});
+
+
+ChapStreamDirectives.directive('catchNewComment', function($http) {
+    return {
+        link: function(scope, elem, element) {
+            elem.bind('new_comment_event', function(e, data) {
+                scope.safeApply(function() {
+                    var post_count = scope.posts.length;
+                    for(var index=0; index<post_count; index++) {
+                        if (scope.posts[index].post_id === data.post_id) {
+                            scope.posts[index].comments.push(data);
+                            break;
+                        }
+                    }
+                });
             });
         }
     }

@@ -48,4 +48,3 @@ class RealtimeHandler(CsWebSocketHandler):
             logger.info('WebSocket closed.')
             self.client.unsubscribe(self.channel)
             self.client.disconnect()
-
