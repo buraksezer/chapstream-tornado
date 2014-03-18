@@ -3,6 +3,35 @@ body {
   height: 100%;
   font-family: 'Open Sans', sans-serif !important;
   background: #fafafa;
+  color: #333333;
+}
+
+#new-post {
+    font-size: 13px;
+    padding: 4px 10px 4px 10px;
+    min-height: 20px;
+    margin-bottom: 5px;
+    height: 39px;
+    background-color: #F4F9FC;
+    border: 1px solid #e8e8e8;
+    border-radius: 0;
+    -webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+}
+
+#new-post .fa-angle-double-right{
+    font-size: 30px;
+    color: #7AB364;
+    font-weight: bold;
+}
+
+#new-post .new-post-message {
+    margin-left: 20px;
+    margin-top: -24px;
+}
+
+#new-post .new-post-by {
+    font-weight: bold;
 }
 
 #chapstream-container {
@@ -25,6 +54,25 @@ textarea {
     margin-bottom: 30px;
 }
 
+#chapstream-timeline form .receivers {
+    display: none;
+}
+
+.post-form-control {
+    padding-bottom: 10px;
+}
+
+.selectize-input {
+    font-size: 12px !important;
+    border-radius: 0 !important;
+}
+
+.selectize-control.multi .selectize-input > div {
+    border-radius: 0 !important;
+    background: #008cba !important;
+    color: #FFF !important;
+}
+
 #chapstream-timeline #post-form {
     margin-bottom: 5px;
 }
@@ -41,6 +89,11 @@ textarea {
 
 .post {
     border-bottom: 1px solid #f5f3f1;
+}
+
+.align-post {
+    margin-left: 54px;
+    margin-top: -74px;
 }
 
 /*.post:hover {
@@ -64,6 +117,15 @@ textarea {
 .post-metadata .user {
     font-size: 15px;
     font-weight: bold;
+}
+
+.user-image {
+    padding: 10px;
+}
+
+.user-image img {
+    width: 50px;
+    height: 50px;
 }
 
 .post-metadata .createdat {
@@ -113,6 +175,10 @@ textarea {
     margin-left: 5px;
     display: inline;
     float: left;
+}
+
+.post-footer a {
+    color: #333;
 }
 
 .post-footer ul {
@@ -174,4 +240,51 @@ textarea {
 
 .post-footer .horizontal-ul {
     margin-bottom: 0;
+}
+
+.comment-edit {
+    color: #333333;
+    margin-left: 5px;
+}
+
+.comment-content ul.dropdown-menu {
+    min-width: 55px !important;
+}
+
+.comment-content .dropdown-menu>li>a {
+    padding: 5px;
+}
+
+/* Like related styles */
+.users-liked {
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+
+.user-liked-item {
+    color: #BE2A38;
+}
+
+/* Group related styles */
+.group-header {
+    border: 1px solid #e6e3e1;
+    background: #FFFFFF;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+.group-header .name {
+    font-weight: bold !important;
+}
+
+.group-header .subscriber-count,
+.group-header .summary {
+    font-size: 13px;
+}
+
+.group-header .groupsubs-status {
+    margin-top: -28px;
 }

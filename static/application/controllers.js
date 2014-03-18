@@ -19,6 +19,7 @@ ChapStreamControllers.controller('TimelineCtrl', ['$scope', '$http',
                 if (data.status == "OK") {
                     $scope.safeApply(function() {
                         $scope.posts = data.posts;
+
                     });
                 }
             }
@@ -43,12 +44,23 @@ ChapStreamControllers.controller('ProfileCtrl', ['$scope', '$http', '$routeParam
 
 ChapStreamControllers.controller('CommentCtrl', ['$scope', '$http',
     function TimelineCtrl($scope, $http) {
-        $http.get('/api/comment/'+$scope.$parent.post.post_id).success(
-            function(data, status) {
+
+    }
+]);
+
+ChapStreamControllers.controller('GroupCtrl', ['$scope', '$http', '$routeParams',
+    function GroupCtrl($scope, $http, $routeParams) {
+        $http.get('/api/group/'+$routeParams.group_id).success(
+            function(data) {
                 if (data.status == "OK") {
                     $scope.safeApply(function() {
-                        $scope.$parent.post.comments = data.comments;
-                        $scope.$parent.post.more_comment_count = data.count;
+                        $scope.group = data.group;
+                        $scope.posts = data.posts;
+                        if ($scope.group.subscriber_count > 1)
+                            $scope.group.subscriber_clause = "subscribers";
+                        else
+                            $scope.group.subscriber_clause = "subscriber";
+
                     });
                 }
             }

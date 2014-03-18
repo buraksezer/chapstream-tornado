@@ -25,7 +25,7 @@
         </div>
       </div>
       <!-- Begin page content -->
-      <div id="chapstream-container" class="container">
+      <div id="chapstream-container" class="container" data-currentuser="{{ name }}">
         {% module xsrf_form_html() %}
         <div ng-view></div>
       </div>

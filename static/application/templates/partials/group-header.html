@@ -1,0 +1,14 @@
+<div class="group-header">
+    <h4 class="name">{{ group.name }} </h4>
+    <div ng-switch on="group.subscribed" class="pull-right groupsubs-status">
+        <span ng-switch-when="false">
+            <button type="button" class="btn btn-primary btn-xs" group-subscribe>Subscribe</button>
+        </span>
+        <span ng-switch-when="true">
+            <button type="button" class="btn btn-warning btn-xs" group-unsubscribe>Unsubscribe</button>
+        </span>
+    </div>
+    <div class="summary">{{ group.summary }}</div>
+    <div class="subscriber-count">{{ group.subscriber_count }} {{ group.subscriber_clause }}</div>
+
+</div>

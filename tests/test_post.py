@@ -71,20 +71,8 @@ class LikeTest(CsBaseTestCase):
         session.add(post)
         session.commit()
 
-        like_prefix = helpers.like_prefix(post.id)
-        like_count = helpers.like_count_key(post.id)
-
-        def check(result, count, bool_):
-            self.assertEqual(redis_conn.llen(like_prefix), count)
-            c = int(redis_conn.get(like_count))
-            self.assertEqual(c, count)
-
-            result = json.loads(result)
-            ul = False
-            if result["likes"]:
-                ul = user.name in result["likes"]
-
-            self.assertEqual(ul, bool_)
+        userlike_key = helpers.userlike_key(user.id)
+        postlike_key = helpers.postlike_key(post.id)
 
         with mock.patch.object(CsRequestHandler,
                                "get_secure_cookie") as m:
@@ -95,13 +83,20 @@ class LikeTest(CsBaseTestCase):
             get_response = self.fetch("/api/like/%s"
                                       % post.id, method="GET")
 
-        check(get_response.body, 1, True)
+        result = json.loads(get_response.body)
+        logging.info(result)
+        self.assertEqual(result["count"], 1)
+        self.assertEqual(result["liked"], True)
+        for user_liked in result["users"]:
+            self.assertEqual(user.name, user_liked["name"])
 
         with mock.patch.object(CsRequestHandler,
                                "get_secure_cookie") as m:
             m.return_value = user.name
             self.fetch("/api/like/%s" % post.id, method="DELETE")
-            get_response = self.fetch("/api/like/%s"
-                                      % post.id, method="GET")
+            self.fetch("/api/like/%s"
+                       % post.id, method="GET")
 
-        check(get_response.body, 0, False)
+        s_ismember = redis_conn.sismember(userlike_key, post.id)
+        self.assertEqual(s_ismember, False)
+        self.assertEqual(redis_conn.llen(postlike_key), 0)

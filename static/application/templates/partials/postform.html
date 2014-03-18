@@ -1,8 +1,27 @@
-<form role="form">
+<form role="form" autosize>
+    <div class="receivers">
+        <input type="text" id="post-receivers" value="My Stream">
+    </div>
     <textarea id="post-form" class="form-control" rows="1" count-char
-        ng-model="commentContent" placeholder="Share your ideas" autosize></textarea>
+        ng-model="commentContent" placeholder="Share your ideas"></textarea>
     <span class="post-form-control">
         <button type="submit" class="pull-right btn btn-primary btn-xs" send-post>Post</button>
         <span class="pull-right post-char-count">{{ restCharCount }}</span>
     </span>
 </form>
+
+<script>
+
+$('#post-receivers').selectize({
+    delimiter: ',',
+    persist: false,
+    createOnBlur: true,
+    create: function(input) {
+        return {
+            value: input,
+            text: input
+        }
+    }
+});
+
+</script>

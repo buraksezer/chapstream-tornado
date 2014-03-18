@@ -15,7 +15,6 @@ class Post(Base):
     id = Column(BigInteger, Sequence(
         'seq_post_id', start=1, increment=1), primary_key=True)
     body = Column(UnicodeText, nullable=True)
-    likes = Column(ARRAY(String), nullable=True)
     is_draft = Column(Boolean, default=False)
     created_at = Column(DateTime, default=func.current_timestamp())
     updated_at = Column(DateTime, onupdate=func.current_timestamp())

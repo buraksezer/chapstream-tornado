@@ -18,6 +18,10 @@ app.config(['$routeProvider',
             templateUrl: TEMPLATE_ROOT+'/content.html',
             controller: 'ContentCtrl'
         }).
+        when("/group/:group_id", {
+            templateUrl: TEMPLATE_ROOT+'/group.html',
+            controller: 'GroupCtrl'
+        }).
         when("/:username", {
             templateUrl: TEMPLATE_ROOT+'/profile.html',
             controller: 'ProfileCtrl'
@@ -37,6 +41,8 @@ app.config(['$routeProvider',
 
 app.run(function($rootScope, InitService) {
     InitService.realtime();
+    /* Set current authenticated user */
+    $rootScope.currentUser = $("#chapstream-container").data('currentuser');
 
     /* Updates model on the fly */
     $rootScope.safeApply = function(fn) {

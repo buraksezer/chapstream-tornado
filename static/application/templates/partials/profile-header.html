@@ -1,0 +1,19 @@
+<div class="profile-header">
+    <h2>This is {{ user.name }}!</h2>
+    <div relationship-status class="relationship-status">
+        <span ng-if="relSubsAndBan">
+            <button type="button" class="btn btn-primary btn-sm" subscribe>Subscribe</button>
+            <button type="button" class="btn btn-danger btn-sm" block>Block</button>
+        </span>
+        <span ng-if="relUnban">
+            <button type="button" class="btn btn-success btn-sm" unblock>Unblock</button>
+        </span>
+        <span ng-if="relUnsubsAndBan">
+            <button type="button" class="btn btn-warning btn-sm" unsubscribe>Unsubscribe</button>
+            <button type="button" class="btn btn-danger btn-sm" block>Block</button>
+        </span>
+        <span ng-if="my_profile">
+            <button type="button" class="btn btn-primary btn-sm">That's you!</button>
+        </span>
+    </div>
+</div>

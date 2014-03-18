@@ -1,6 +1,6 @@
 # Frontend Handlers
 from chapstream.frontend import MainHandler
-from chapstream.frontend import ProfileHandler
+from chapstream.frontend import DummyHandler
 
 # API Handlers
 # User related handlers
@@ -29,13 +29,15 @@ FRONTEND_URLS = [
     (r"/login", LoginHandler),
     (r"/logout", LogoutHandler),
     (r"/register", RegisterHandler),
-    (r"/(?P<username>[^\/]+)", ProfileHandler) # This should be at the end of the list
+    (r"/group/(?P<group_id>[^\/]+)", DummyHandler),
+    (r"/(?P<username>[^\/]+)", DummyHandler) # This should be at the end of the list
 ]
 
 API_URLS = [
     (r"/api/comment/(?P<post_id>[^\/]+)", CommentHandler),
     (r"/api/comment/(?P<post_id>[^\/]+)/all", CommentHandler),
     (r"/api/comment-delete/(?P<comment_id>[^\/]+)", CommentHandler),
+    (r"/api/like/(?P<post_id>[^\/]+)/all", LikeHandler),
     (r"/api/like/(?P<post_id>[^\/]+)", LikeHandler),
     (r"/api/group/subscribe/(?P<group_id>[^\/]+)", GroupSubscriptionHandler),
     (r"/api/group", GroupHandler),

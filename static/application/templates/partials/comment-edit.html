@@ -1,0 +1,11 @@
+<div class="comment-box">
+    <form role="form">
+        <textarea class="comment-form form-control" rows="1" count-char
+            ng-model="commentContent" placeholder="Write your comment" autosize-comment></textarea>
+        <div class="comment-form-control">
+            <a class="comment-cancel pull-right" href="#" comment-cancel>Cancel</a>
+            <button type="submit" class="pull-right btn btn-primary btn-xs" post-comment>Post</button>
+            <span class="pull-left comment-char-count">{{ restCharCount }}</span>
+        </div>
+    </form>
+</div>

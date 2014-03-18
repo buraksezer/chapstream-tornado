@@ -9,6 +9,8 @@ import tornado.web
 from chapstream import config
 from chapstream.backend.tasks import block_user, push_notification
 from chapstream.api import decorators
+from chapstream.api.timeline import get_post_like
+from chapstream.api.comment import get_comment_summary
 from chapstream.api import CsRequestHandler, process_response
 from chapstream.backend.db.models.user import User, UserRelation
 from chapstream.backend.db.models.post import Post
@@ -45,9 +47,16 @@ class UserHandler(CsRequestHandler):
                 post = posts[index]
                 created_at = calendar.timegm(post.created_at.utctimetuple())
                 posts[index] = {
+                    "name": post.user.name,
+                    "fullname": post.user.fullname,
                     "post_id": post.id,
                     "body": post.body,
-                    "created_at": created_at
+                    "created_at": created_at,
+                    "users_liked": get_post_like(post.id,
+                                                 self.redis_conn,
+                                                 self.current_user,
+                                                 self.session),
+                    "comments": get_comment_summary(post.id, self.redis_conn)
                 }
 
             data = {
@@ -57,7 +66,7 @@ class UserHandler(CsRequestHandler):
                 },
                 "posts": posts,
             }
-            result = process_response(data=data, status=config.API_OK)
+            result = process_response(data=data)
 
         return result
 
@@ -136,7 +145,7 @@ class RelationshipStatusHandler(CsRequestHandler):
         result = {'rule': None}
         if self.current_user.name == username:
             result["rule"] = "YOU"
-            return process_response(data=result, status=config.API_OK)
+            return process_response(data=result)
 
         chap = self.session.query(User).filter_by(name=username).first()
         if not chap:
@@ -150,7 +159,7 @@ class RelationshipStatusHandler(CsRequestHandler):
             result['rule'] = "BANNED" if \
                 relation.is_banned else "SUBSCRIBED"
 
-        return process_response(data=result, status=config.API_OK)
+        return process_response(data=result)
 
 
 class SubscriptionHandler(CsRequestHandler):
@@ -170,7 +179,7 @@ class SubscriptionHandler(CsRequestHandler):
         message = {
             "event": "subscription_notify",
             "body": "%s has subscribed to your stream." %
-                        self.current_user.name
+                    self.current_user.name
         }
         push_notification([chap.id], message)
 

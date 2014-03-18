@@ -44,11 +44,11 @@ def userintr_hash(user_id):
     return "userintr" + REDIS_KEY_DELIMITER + str(user_id)
 
 
-def like_prefix(post_id):
-    return "like"+ REDIS_KEY_DELIMITER + str(post_id)
+def userlike_key(user_id):
+    return "userlike"+ REDIS_KEY_DELIMITER + str(user_id)
 
 
-def like_count_key(post_id):
-    return "like_count"+ REDIS_KEY_DELIMITER + str(post_id)
+def postlike_key(post_id):
+    return "postlike"+ REDIS_KEY_DELIMITER + str(post_id)
 
 

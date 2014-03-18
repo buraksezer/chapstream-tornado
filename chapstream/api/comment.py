@@ -11,7 +11,6 @@ from chapstream.api import decorators
 from chapstream.api import CsRequestHandler, process_response
 from chapstream.backend.db.models.post import Post
 from chapstream.backend.db.models.comment import Comment
-from chapstream.backend.db.models.user import UserRelation
 from chapstream.backend.tasks import push_comment
 
 logger = logging.getLogger(__name__)
@@ -108,13 +107,7 @@ class CommentHandler(CsRequestHandler):
                 result.append(comment_dict)
             data = {"comments": result}
         else:
-            comment_summary = helpers.comment_summary_key(post_id)
-            comments = self.redis_conn.lrange(comment_summary, 0, 3)
-            for comment in comments:
-                comment = json.loads(comment)
-                result.append(comment)
-            count = Comment.query.filter_by(post_id=post_id).count()
-            data = {"comments": result, "count": count}
+            data = get_comment_summary(post_id, self.redis_conn)
 
         return process_response(data=data)
 
@@ -148,3 +141,16 @@ class CommentHandler(CsRequestHandler):
             userintr_hash = helpers.userintr_hash(self.current_user.id)
             self.redis_conn.hdel(userintr_hash, str(post_id))
 
+
+def get_comment_summary(post_id, redis_conn):
+    """
+    Aggregates comment summary for given post
+    """
+    result = []
+    comment_summary = helpers.comment_summary_key(post_id)
+    comments = redis_conn.lrange(comment_summary, 0, 3)
+    for comment in comments:
+        comment = json.loads(comment)
+        result.append(comment)
+    count = Comment.query.filter_by(post_id=post_id).count()
+    return {"comments": result, "count": count}

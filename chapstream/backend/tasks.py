@@ -8,6 +8,7 @@ from sqlalchemy import and_
 from chapstream.backend.db import session
 from chapstream.backend.db.models.user import User, UserRelation
 from chapstream.backend.db.models.group import Group
+from chapstream.backend.db.models.post import Post
 from chapstream.backend.db.models.notification import Notification
 from chapstream.backend.db.models.comment import Comment
 from chapstream import config
@@ -208,6 +209,47 @@ def push_comment(comment, u_id):
             comment_json = json.dumps(comment)
             logger.info('Sending a comment to %s', channel)
             redis_conn.publish(channel, comment_json)
+        except redis.ConnectionError as err:
+            logger.error('Connection error: %s', err)
+            # TODO: Handle failed tasks
+
+
+@kuyruk.task
+def push_like(post_id, user_like_id):
+    post = Post.get(post_id)
+    liked = User.get(user_like_id)
+    postlike_key = helpers.postlike_key(post_id)
+    length = redis_conn.llen(postlike_key)
+
+    # Includes user names
+    usernames_liked = redis_conn.lrange(postlike_key, 0, length)
+    logger.info(usernames_liked)
+    users_liked = User.query.with_entities(User.id, User.name, User.fullname).\
+        filter(User.name.in_(usernames_liked)).all()
+
+    chaps = User.query.with_entities(User.id, User.name, User.fullname).\
+        join(UserRelation.chap).\
+        filter(and_(UserRelation.user_id == post.user_id,
+                    User.name.notin_(usernames_liked))).all()
+
+    owner = (post.user.id, post.user.name, post.user.fullname)
+    screen_name = liked.fullname if liked.fullname else liked.name
+    data = {
+        "type": config.REALTIME_LIKE,
+        "post_id": post_id,
+        "name": liked.name,
+        "screen_name": screen_name
+    }
+
+    user_ids = users_liked + chaps + [owner]
+    logger.info(user_ids)
+    for (user_id, user_name, user_fullname) in set(user_ids):
+        if user_id == user_like_id:
+            continue
+        channel = helpers.user_channel(user_id)
+        try:
+            data_json = json.dumps(data)
+            redis_conn.publish(channel, data_json)
         except redis.ConnectionError as err:
             logger.error('Connection error: %s', err)
             # TODO: Handle failed tasks

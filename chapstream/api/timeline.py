@@ -1,18 +1,20 @@
+import os
 import json
 import logging
 import calendar
 
 import tornado.web
-from sqlalchemy import update
 
 from chapstream import helpers
 from chapstream import config
 from chapstream.api import decorators
 from chapstream.api import CsRequestHandler, process_response
+from chapstream.api.comment import get_comment_summary
 from chapstream.backend.db.models.post import Post
+from chapstream.backend.db.models.user import User
 from chapstream.backend.db.models.group import Group
 from chapstream.backend.tasks import post_timeline, \
-    delete_post_from_timeline
+    delete_post_from_timeline, push_like
 from chapstream.config import TIMELINE_CHUNK_SIZE
 
 logger = logging.getLogger(__name__)
@@ -25,7 +27,7 @@ class PostHandler(CsRequestHandler):
 
         # Create a database record for this post on PostgreSQL database
         data = json.loads(self.request.body)
-        body = data["body"].decode('UTF-8')
+        body = data["body"].encode('UTF-8')
         new_post = Post(body=body, user=self.current_user)
         self.session.add(new_post)
         self.session.commit()
@@ -104,7 +106,19 @@ class TimelineLoader(CsRequestHandler):
         # redis returns a raw string instead of a python object.
         for index in xrange(0, len(posts)):
             post = posts[index]
-            posts[index] = json.loads(post)
+            post = json.loads(post)
+            # Aggregate like votes
+            users_liked = get_post_like(post["post_id"],
+                                        self.redis_conn,
+                                        self.current_user,
+                                        self.session)
+            post["users_liked"] = users_liked
+
+            # Aggregate comments
+            comments = get_comment_summary(post["post_id"], self.redis_conn)
+            post["comments"] = comments
+
+            posts[index] = post
         posts = {"posts": posts}
         return process_response(data=posts)
 
@@ -119,26 +133,18 @@ class LikeHandler(CsRequestHandler):
                                     message="Post:%s could not be found."
                                             % post_id)
 
-        if post.likes:
-            post.likes.append(self.current_user.name)
-        else:
-            post.likes = [self.current_user.name]
-
-        self.session.commit()
-
         # Set Redis data
-        like_prefix = helpers.like_prefix(post_id)
-        like_count_key = helpers.like_count_key(post_id)
-        if not self.redis_conn.get(like_count_key):
-            self.redis_conn.set(like_count_key, 1)
+        userlike_key = helpers.userlike_key(self.current_user.id)
+        postlike_key = helpers.postlike_key(post_id)
+        if not self.redis_conn.sismember(userlike_key, post_id):
+            self.redis_conn.sadd(userlike_key, post_id)
+            self.redis_conn.rpush(postlike_key, self.current_user.name)
         else:
-            self.redis_conn.incr(like_count_key)
+            return process_response(status=config.API_WARNING,
+                                    message="You have already liked Post:%s"
+                                            % post_id)
+        push_like(post_id, self.current_user.id)
 
-        length = self.redis_conn.llen(like_prefix)
-        if length == 3:
-            self.redis_conn.lpop(like_prefix)
-
-        self.redis_conn.rpush(like_prefix, self.current_user.name)
 
     @tornado.web.authenticated
     @decorators.api_response
@@ -148,8 +154,11 @@ class LikeHandler(CsRequestHandler):
             return process_response(status=config.API_FAIL,
                                     message="Post:%s could not be found."
                                             % post_id)
-        return process_response(data={"likes": post.likes})
-
+        path = os.path.basename(self.request.path)
+        result = get_post_like(post_id, self.redis_conn,
+                               self.current_user, self.session,
+                               path=path)
+        return process_response(result)
 
     @tornado.web.authenticated
     @decorators.api_response
@@ -160,25 +169,47 @@ class LikeHandler(CsRequestHandler):
                                     message="Post:%s could not be found."
                                             % post_id)
 
-        if self.current_user.name in post.likes:
-            likes = post.likes.remove(self.current_user.name)
-            query = update(Post).where(Post.id == post_id).\
-                values(likes=likes)
-            self.session.execute(query)
-
-            self.session.commit()
-
-            # Remove from Redis
-            like_prefix = helpers.like_prefix(post_id)
-            # TODO: Use config module to get default values
-            items = self.redis_conn.lrange(like_prefix, 0, 3)
-            if self.current_user.name in items:
-                like_count = helpers.like_count_key(post_id)
-                self.redis_conn.lrem(like_prefix,
-                                     self.current_user.name)
-                self.redis_conn.decr(like_count)
-        else:
-            # TODO: write a suitable warning message
-            return process_response(status=config.API_WARNING,
-                                    message="Post:%s a warning message"
+        userlike_key = helpers.userlike_key(self.current_user.id)
+        postlike_key = helpers.postlike_key(post_id)
+        if not self.redis_conn.sismember(userlike_key, post_id):
+            return process_response(status=config.API_FAIL,
+                                    message="You have no like vote for Post:%s"
                                             % post_id)
+        self.redis_conn.srem(userlike_key, post_id)
+        self.redis_conn.lrem(postlike_key, self.current_user.name)
+
+
+def get_post_like(post_id, redis_conn, current_user, session, path=None):
+    """
+    Gets 'like' data for loading timeline from Redis cluster.
+    """
+    userlike_key = helpers.userlike_key(current_user.id)
+    postlike_key = helpers.postlike_key(post_id)
+    liked = redis_conn.sismember(userlike_key, post_id)
+    length = redis_conn.llen(postlike_key)
+    if path == "all":
+        result = {"users": redis_conn.lrange(postlike_key, 0, length)}
+    else:
+        # Get last 3 items
+        min_ = 0 if length < 3 else length - 3
+        last_likes = redis_conn.lrange(postlike_key, min_, length)
+        users = []
+        for item in last_likes:
+            #TODO:  Create an index for user names
+            user = session.query(User).filter_by(name=item).first()
+            if user == current_user:
+                screen_name = "You"
+            else:
+                screen_name = user.fullname if user.fullname else user.name
+
+            users.append(
+                {
+                    "name": item,
+                    "screen_name": screen_name  ,
+                }
+            )
+        result = {"users": users}
+
+    result["liked"] = liked
+    result["count"] = length
+    return result

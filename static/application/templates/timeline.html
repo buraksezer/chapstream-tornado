@@ -1,54 +1,5 @@
-<div id="chapstream-timeline" catch-new-comment>
-    <div ng-include="'/static/application/templates/partials/postform.html'"></div>
-    <div id="new-post" count-new-post>{{ new_post_count }} new posts</div>
-    <div id="posts" catch-new-post>
-        <div class="post" ng-repeat="post in posts">
-            <div class="post-metadata">
-                <span class="user">{{ post.name }}</span>
-                <span class="createdat"calc-from-now ts="{{ post.created_at }}">{{ calcTime }}</span>
-            </div>
-            <div class="post-content">
-                {{ post.body }}
-            </div>
-            <div class="post-footer">
-                <ul class="horizontal-ul">
-                    <li showCommentBox><a href="#" show-comment-box>Comment</a></li>
-                    <li>&middot;</li>
-                    <li><a href="#">Like</a></li>
-                    <li>&middot;</li>
-                    <li><a href="#">Repost</a></li>
-                    <li>&middot;</li>
-                    <li><a href="#">Hide</a></li>
-                </ul>
-            </div>
-            <div class="post-social">
-                <div class="comments" ng-controller="CommentCtrl">
-                    <div class="comment" ng-repeat="comment in post.comments">
-                        <div ng-if="$index == 2 && post.more_comment_count" class="more-comments">
-                            <a href="#" more-comments>{{ post.more_comment_count - 3 }} more comments</a>
-                        </div>
-                        <div class="comment-icon"><i class="fa fa-comment"></i></div>
-                        <div class="comment-content">
-                            "{{ comment.body }}"
-                            <span> - </span>
-                            <a ng-if="comment.fullname" href="/{{ comment.user }}">{{ comment.user }}</a>
-                            <a ng-if="!comment.fullname" href="/{{ comment.name }}">{{ comment.name }}</a>
-                        </div>
-                        <div ng-if="post.comments.length == $index + 1" class="comment-box-seperator">
-                    </div>
-                </div>
-                <div class="comment-box">
-                    <form role="form">
-                        <textarea class="comment-form form-control" rows="1" count-char
-                            ng-model="commentContent" placeholder="Write your comment" autosize-comment></textarea>
-                        <div class="comment-form-control">
-                            <a class="comment-cancel pull-right" href="#" comment-cancel>Cancel</a>
-                            <button type="submit" class="pull-right btn btn-primary btn-xs" post-comment>Post</button>
-                            <span class="pull-left comment-char-count">{{ restCharCount }}</span>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
+<div id="chapstream-timeline">
+    <div ng-if="group"  ng-include="'/static/application/templates/partials/group-header.html'"></div>
+    <div ng-if="!user"  ng-include="'/static/application/templates/partials/timeline-header.html'"></div>
+    <div ng-include="'/static/application/templates/partials/post-list.html'"></div>
 </div>

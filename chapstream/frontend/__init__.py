@@ -10,5 +10,5 @@ class MainHandler(CsRequestHandler):
         self.render("index.html", name=name)
 
 
-class ProfileHandler(MainHandler):
+class DummyHandler(MainHandler):
     pass
