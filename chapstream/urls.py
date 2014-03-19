@@ -11,6 +11,7 @@ from chapstream.api.user import LogoutHandler
 from chapstream.api.user import RegisterHandler
 from chapstream.api.user import SubscriptionHandler
 from chapstream.api.user import RelationshipStatusHandler
+from chapstream.api.search import PostReceivers
 
 # Timeline related handlers
 from chapstream.api.commons import RealtimeHandler
@@ -34,6 +35,7 @@ FRONTEND_URLS = [
 ]
 
 API_URLS = [
+    (r"/api/search/postreceivers/(?P<query>[^\/]+)", PostReceivers),
     (r"/api/comment/(?P<post_id>[^\/]+)", CommentHandler),
     (r"/api/comment/(?P<post_id>[^\/]+)/all", CommentHandler),
     (r"/api/comment-delete/(?P<comment_id>[^\/]+)", CommentHandler),

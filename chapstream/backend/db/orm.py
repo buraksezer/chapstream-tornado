@@ -98,4 +98,11 @@ Base = declarative_base(bind=chapstream_engine, cls=Base)
 
 
 def init_db(engine):
+  """
+  Creates database from models and creates indexes
+  """
   Base.metadata.create_all(bind=engine)
+  #engine.execute("CREATE EXTENSION pg_trgm;")
+  engine.execute("CREATE INDEX user_name_trg_idx ON users USING gist (name gist_trgm_ops);")
+  engine.execute("CREATE INDEX user_fullname_trg_idx ON users USING gist (fullname gist_trgm_ops);")
+  engine.execute("CREATE INDEX group_name_trg_idx ON groups USING gist (name gist_trgm_ops);")

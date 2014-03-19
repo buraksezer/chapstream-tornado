@@ -19,6 +19,7 @@ chapstream_engine = create_engine(
 )
 session = scoped_session(sessionmaker(bind=chapstream_engine))
 
+
 @contextmanager
 def new_session():
     session = sessionmaker(bind=chapstream_engine)

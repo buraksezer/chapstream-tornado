@@ -52,12 +52,15 @@ class User(Base):
 class UserRelation(Base):
     __tablename__ = "user_relations"
     id = Column(BigInteger, Sequence(
-        'seq_user_relation_id', start=1, increment=1), primary_key=True)
+        'seq_user_relation_id', start=1, increment=1),
+                primary_key=True)
 
     user_id = Column(BigInteger, ForeignKey(User.id))
-    user = relationship(User, backref="chap_list",  primaryjoin=(User.id == user_id))
+    user = relationship(User, backref="chap_list",
+                        primaryjoin=(User.id == user_id))
     chap_id = Column(BigInteger, ForeignKey(User.id))
-    chap = relationship(User, backref="user_list",  primaryjoin=(User.id == chap_id))
+    chap = relationship(User, backref="user_list",
+                        primaryjoin=(User.id == chap_id))
     is_banned = Column(Boolean, default=False)
 
     def __repr__(self):
