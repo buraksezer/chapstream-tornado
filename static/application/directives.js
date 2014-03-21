@@ -12,7 +12,7 @@ ChapStreamDirectives.directive('sendPost', function($http) {
                 scope.inProgress = true;
                 var form = $("#post-form")
                 var post = form.val().trim();
-                $http.post('/api/timeline/post?receiver_groups=1', {body: post}).success(
+                $http.post('/api/timeline/post', {body: post}).success(
                     function(data, status) {
                         if (status === 200){
                             form.val('');
@@ -32,9 +32,7 @@ ChapStreamDirectives.directive('sendPost', function($http) {
 ChapStreamDirectives.directive('autosize', function() {
     return {
         link: function(scope, elem, element) {
-            console.log(elem);
             elem.bind('focusin', function(e) {
-                console.log(e);
                 $("#post-form").autosize({className: 'post-box', append: "\n\n\n"});
                 scope.placeholder = $("#post-form").attr("placeholder");
                 $("#post-form").attr("placeholder", "");
@@ -43,7 +41,6 @@ ChapStreamDirectives.directive('autosize', function() {
 
             });
             elem.bind('focusout', function(e) {
-                console.log(e.target);
                 /*if (scope.restCharCount === 2000) {
                     $('#post-form').trigger('autosize.destroy');
                     $("#post-form").attr('placeholder', scope.placeholder);
@@ -83,15 +80,26 @@ ChapStreamDirectives.directive('catchNewPost', function($http) {
                     return;
                 }
                 scope.safeApply(function() {
-                    console.log(data);
-                    console.log(scope.user);
-                    console.log(scope.$parent.user);
-                    scope.$parent.posts.unshift(data)
+                    data.is_realtime = "realtime-post";
+                    scope.$parent.posts.unshift(data);
                 });
             });
         }
     }
 });
+
+ChapStreamDirectives.directive('releaseNewPosts', function($http) {
+    return {
+        link: function(scope, elem, element) {
+            elem.bind('click', function(e, data) {
+                $(".post").removeClass("realtime-post");
+                scope.safeApply(function() {
+                    scope.new_post_count = false;
+                })
+            });
+        }
+    }
+})
 
 ChapStreamDirectives.directive('countNewPost', function($http) {
     return {
@@ -299,7 +307,6 @@ ChapStreamDirectives.directive('moreComments', function($http) {
             elem.bind('click', function(e) {
                 $http.get('/api/comment/'+scope.$parent.post.post_id+"/all").success(
                     function(data, status) {
-                        console.log(scope.$parent.post);
                         if (data.status == "OK") {
                             scope.safeApply(function() {
                                 scope.$parent.post.comments.comments = [];
@@ -383,6 +390,8 @@ ChapStreamDirectives.directive('likePost', function($http) {
                             scope.safeApply(function() {
                                 scope.post.users_liked.liked = true;
                             });
+                            var event_data = {"name": scope.currentUser, "screen_name": "You"}
+                            $("#post-social-"+scope.post.post_id).trigger("new_like_event", event_data);
                         }
                     }
                 );
@@ -398,9 +407,14 @@ ChapStreamDirectives.directive('unlikePost', function($http) {
                 $http.delete("/api/like/"+scope.post.post_id).success(
                     function(data) {
                         if (data.status === "OK") {
-                            console.log("unlike etti.")
                             scope.safeApply(function() {
                                 scope.post.users_liked.liked = false;
+                                var length = scope.post.users_liked.users.length;
+                                for (var i=0; i<length; i++) {
+                                    if (scope.post.users_liked.users[i].name === scope.currentUser)
+                                        scope.post.users_liked.users.splice(i, 1);
+                                }
+                                scope.post.users_liked.count--;
                             });
                         }
                     }
@@ -436,15 +450,12 @@ ChapStreamDirectives.directive('groupSubscribe', function($http, $routeParams) {
     return {
         link: function(scope, elem, element) {
             elem.bind('click', function(e, data) {
-                console.log($routeParams.group_id);
                 $http.post("/api/group/subscribe/"+$routeParams.group_id).success(
                     function(data) {
                         scope.safeApply(function() {
                             scope.group.subscribed = true;
                             scope.group.subscriber_count++;
                         });
-                        console.log(scope.group);
-                        console.log(data);
                     }
                 );
             });

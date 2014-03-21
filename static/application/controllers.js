@@ -19,7 +19,6 @@ ChapStreamControllers.controller('TimelineCtrl', ['$scope', '$http',
                 if (data.status == "OK") {
                     $scope.safeApply(function() {
                         $scope.posts = data.posts;
-
                     });
                 }
             }

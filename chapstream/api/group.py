@@ -50,22 +50,8 @@ class GroupHandler(CsRequestHandler):
                 .limit(config.TIMELINE_CHUNK_SIZE)\
                 .all()
 
-            length = len(posts)
-            for index in xrange(0, length):
-                post = posts[index]
-                created_at = calendar.timegm(post.created_at.utctimetuple())
-                posts[index] = {
-                    "name": post.user.name,
-                    "fullname": post.user.fullname,
-                    "post_id": post.id,
-                    "body": post.body,
-                    "created_at": created_at,
-                    "users_liked": get_post_like(post.id,
-                                                 self.redis_conn,
-                                                 self.current_user,
-                                                 self.session),
-                    "comments": get_comment_summary(post.id, self.redis_conn)
-                }
+            posts = collect_posts(posts, self.redis_conn,
+                                  self.current_user, self.session)
             group_key = helpers.group_key(group_id)
             self.redis_conn.hlen(group_key)
 
@@ -173,3 +159,22 @@ class GroupSubscriptionHandler(CsRequestHandler):
             return process_response(status=config.API_FAIL,
                                     message="Subscription removing failed. Group: %s"
                                             % group_id)
+
+
+def collect_posts(posts, redis_conn, current_user, session):
+    length = len(posts)
+    for index in xrange(0, length):
+        post = posts[index]
+        created_at = calendar.timegm(post.created_at.utctimetuple())
+        posts[index] = {
+            "name": post.user.name,
+            "fullname": post.user.fullname,
+            "post_id": post.id,
+            "body": post.body,
+            "created_at": created_at,
+            "users_liked": get_post_like(post.id, redis_conn,
+                                         current_user,
+                                         session),
+            "comments": get_comment_summary(post.id, redis_conn)
+        }
+    return posts

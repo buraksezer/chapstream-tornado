@@ -6,10 +6,12 @@ import calendar
 import tornado
 import tornado.web
 
+from chapstream import helpers
 from chapstream import config
 from chapstream.backend.tasks import block_user, push_notification
 from chapstream.api import decorators
 from chapstream.api.timeline import get_post_like
+from chapstream.api.group import collect_posts
 from chapstream.api.comment import get_comment_summary
 from chapstream.api import CsRequestHandler, process_response
 from chapstream.backend.db.models.user import User, UserRelation
@@ -263,4 +265,23 @@ class BlockHandler(CsRequestHandler):
         self.session.delete(rel)
         self.session.commit()
 
-        return process_response(status=config.API_OK)
+        return process_response()
+
+
+class LikedPostsHandler(CsRequestHandler):
+    @tornado.web.authenticated
+    @decorators.api_response
+    def get(self):
+        offset = self.get_argument("offset", default=0)
+        # This is a bit inefficient
+        userlike_key = helpers.userlike_key(self.current_user.id)
+        liked_posts = list(self.redis_conn.smembers(userlike_key))
+        logger.info(liked_posts)
+        post_ids = liked_posts[offset:config.TIMELINE_CHUNK_SIZE]
+        posts = self.session.query(Post).filter(Post.id.in_(post_ids)).all()
+        logger.info(posts)
+        posts = collect_posts(posts, self.redis_conn, self.current_user, self.session)
+        logger.info(posts)
+
+        return process_response(data={"data": posts})
+

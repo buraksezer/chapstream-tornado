@@ -142,6 +142,30 @@ class CommentHandler(CsRequestHandler):
             self.redis_conn.hdel(userintr_hash, str(post_id))
 
 
+class CollectCommentsHandler(CsRequestHandler):
+    @tornado.web.authenticated
+    @decorators.api_response
+    def get(self):
+        offset = self.get_argument("offset", default=0)
+        limit = self.get_argument("limit", config.TIMELINE_CHUNK_SIZE)
+        comments = Comment.query.filter_by(user_id=self.current_user.id).\
+            order_by("id desc").offset(offset).limit(limit).all()
+
+        length = len(comments)
+        for index in xrange(0, length):
+            item = comments[index]
+            comments[index] = {
+                "id": item.id,
+                "body": item.body,
+                "created_at": calendar.timegm(item.created_at.utctimetuple()),
+                "post_id": item.post_id,
+                "post_owner_name": item.post.user.name,
+                "post_owner_fullname": item.post.user.fullname
+            }
+
+        return process_response(data={"comments": comments})
+
+
 def get_comment_summary(post_id, redis_conn):
     """
     Aggregates comment summary for given post

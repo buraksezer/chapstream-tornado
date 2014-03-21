@@ -34,6 +34,10 @@ body {
     font-weight: bold;
 }
 
+.realtime-post {
+    display: none;
+}
+
 #chapstream-container {
     padding-top: 60px;
 }
@@ -44,6 +48,10 @@ code {
 
 #chapstream-timeline {
     margin-top: 10px;
+}
+
+.container {
+    width: 970px;
 }
 
 textarea {

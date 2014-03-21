@@ -11,6 +11,7 @@ from chapstream.api.user import LogoutHandler
 from chapstream.api.user import RegisterHandler
 from chapstream.api.user import SubscriptionHandler
 from chapstream.api.user import RelationshipStatusHandler
+from chapstream.api.user import LikedPostsHandler
 from chapstream.api.search import PostReceivers
 
 # Timeline related handlers
@@ -18,6 +19,7 @@ from chapstream.api.commons import RealtimeHandler
 from chapstream.api.timeline import TimelineLoader
 from chapstream.api.timeline import PostHandler
 from chapstream.api.timeline import LikeHandler
+from chapstream.api.comment import CollectCommentsHandler
 from chapstream.api.comment import CommentHandler
 
 # Group related handlers
@@ -52,6 +54,8 @@ API_URLS = [
     (r"/api/user/unsubscribe/(?P<username>[^\/]+)", SubscriptionHandler),
     (r"/api/user/block/(?P<username>[^\/]+)", BlockHandler),
     (r"/api/user/unblock/(?P<username>[^\/]+)", BlockHandler),
+    (r"/api/user/likedposts", LikedPostsHandler),
+    (r"/api/user/comments", CollectCommentsHandler),
     (r"/api/user/(?P<username>[^\/]+)", UserHandler),  # This should be at the end of the list
 ]
 
