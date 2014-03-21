@@ -4,6 +4,7 @@ from sqlalchemy import Table, Column, DateTime, Boolean, \
 from sqlalchemy.orm import relationship
 
 from chapstream.backend.db.orm import Base
+from chapstream.backend.db.orm import TSVector
 
 
 group_posts = Table(
@@ -25,6 +26,7 @@ class Group(Base):
     summary = Column(UnicodeText)
     is_private = Column(Boolean, default=False)
     is_hidden = Column(Boolean, default=False)
+    name_tsv = Column(TSVector)
     posts = relationship('Post',
                          cascade="all,delete",
                          backref='groups',

@@ -2,6 +2,7 @@ import json
 
 from sqlalchemy import func
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.ext.compiler import compiles
 from sqlalchemy.orm import object_session
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.types import TypeDecorator, Text, UnicodeText
@@ -28,6 +29,15 @@ class JSONType(TypeDecorator):
 
 class UnicodeJSONType(JSONType):
     impl = UnicodeText
+
+
+class TSVector(TypeDecorator):
+    impl = UnicodeText
+
+
+@compiles(TSVector, 'postgresql')
+def compile_tsvector(element, compiler, **kw):
+    return 'TSVector'
 
 
 class Base(object):
@@ -106,3 +116,6 @@ def init_db(engine):
   engine.execute("CREATE INDEX user_name_trg_idx ON users USING gist (name gist_trgm_ops);")
   engine.execute("CREATE INDEX user_fullname_trg_idx ON users USING gist (fullname gist_trgm_ops);")
   engine.execute("CREATE INDEX group_name_trg_idx ON groups USING gist (name gist_trgm_ops);")
+  engine.execute("CREATE TRIGGER tsvupdate BEFORE INSERT OR UPDATE ON groups FOR EACH ROW EXECUTE "
+                 "PROCEDURE tsvector_update_trigger(name_tsv, 'pg_catalog.simple', name);")
+  engine.execute("CREATE INDEX name_tsv_idx ON groups USING GIN(name_tsv)")
