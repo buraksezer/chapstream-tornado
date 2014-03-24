@@ -46,7 +46,7 @@ def push_to_timeline(user, post):
 
 # TODO: Add retry
 @kuyruk.task
-def post_timeline(post, receiver_users=None, receiver_groups=None):
+def post_timeline(post, receiver_groups=None):
     # Generate a Redis timeline post id
     post["rid"] = redis_conn.incr(config.POST_RID_HEAD_KEY)
 
@@ -64,16 +64,11 @@ def post_timeline(post, receiver_users=None, receiver_groups=None):
 
     for relation in relations:
         group_receiver = False
-        user = User.get(relation.user_id)
-        if not user:
-            logger.info("User could not be found: %s", user.name)
-            continue
-
         if receiver_groups:
             # If the user is a member of the receiver groups,
-            # dont send the post to the user directly
+            # dont send the post to the user.
             for group_id in receiver_groups:
-                user_key = str(user.id)
+                user_key = str(relation.user_id)
                 if redis_conn.sismember(user_key, group_id):
                     group_receiver = True
                     break
@@ -81,10 +76,7 @@ def post_timeline(post, receiver_users=None, receiver_groups=None):
             if group_receiver:
                 continue
 
-        if receiver_users:
-            if not user.name in receiver_users:
-                continue
-        push_to_timeline(user, post)
+        push_to_timeline(relation.user, post)
 
 
 @kuyruk.task

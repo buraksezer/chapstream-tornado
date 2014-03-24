@@ -48,6 +48,7 @@ class PostHandler(CsRequestHandler):
             receiver_users = [user for user in receiver_users.split(",")]
 
         receiver_groups = self.get_argument("receiver_groups", None)
+        # TODO: Check subscription status
         if receiver_groups:
             receiver_groups = [group for group in receiver_groups.split(",")]
             # Add posts to the group on PostgreSQL
@@ -65,8 +66,7 @@ class PostHandler(CsRequestHandler):
             # Send all changes in a transaction
             self.session.commit()
 
-        post_timeline(post, receiver_users=receiver_users,
-                      receiver_groups=receiver_groups)
+        post_timeline(post, receiver_groups=receiver_groups)
 
     @tornado.web.authenticated
     @decorators.api_response

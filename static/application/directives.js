@@ -9,10 +9,36 @@ ChapStreamDirectives.directive('sendPost', function($http) {
         restrict: 'A',
         link: function (scope, elem, element) {
             elem.bind('click', function (e) {
+                var receiver_groups = [];
+                var receiver_users = [];
+                var params = {'mystream': 0};
+                $(".selectize-input").find(".item").each(function() {
+                    var type = $(this).data("type");
+                    var value = $(this).data("value");
+                    if (typeof type === 'undefined' && value === 0) {
+                        var params = {'mystream': 1};
+                    }
+                    if (type === 'user') {
+                        receiver_users.push(value);
+                    }
+                    if (type === 'group') {
+                        receiver_groups.push(value);
+                    }
+                });
+                if (receiver_groups.length != 0) {
+                    params["receiver_groups"] = receiver_groups.join(",");
+                }
+                if (receiver_users.length != 0) {
+                    params["receiver_users"] = receiver_users.join(",");
+                }
+                var url = '/api/timeline/post';
+                if (params.length != 0) {
+                    url += "?"+ $.param(params);
+                }
                 scope.inProgress = true;
                 var form = $("#post-form")
                 var post = form.val().trim();
-                $http.post('/api/timeline/post', {body: post}).success(
+                $http.post(url, {body: post}).success(
                     function(data, status) {
                         if (status === 200){
                             form.val('');
@@ -38,7 +64,6 @@ ChapStreamDirectives.directive('autosize', function() {
                 $("#post-form").attr("placeholder", "");
                 $('.post-form-control').css('display', 'block');
                 $("#chapstream-timeline form .receivers").css('display', 'block');
-
             });
             elem.bind('focusout', function(e) {
                 /*if (scope.restCharCount === 2000) {
@@ -47,6 +72,54 @@ ChapStreamDirectives.directive('autosize', function() {
                     $('.post-form-control').css('display', 'none');
                     $("#chapstream-timeline form .receivers").css('display', 'none');
                 }*/
+            });
+        }
+    }
+});
+
+ChapStreamDirectives.directive('selectReceivers', function() {
+    return {
+        link: function(scope, elem, element) {
+            var mystream = {
+                'type': null,
+                'identifier': '0',
+                'name': 'My Stream'
+            };
+            var $select = $('#post-receivers').selectize({
+                valueField: 'identifier',
+                labelField: 'name',
+                searchField: 'name',
+                options: [mystream],
+                create: false,
+                render: {
+                    option: function(item, escape) {
+                        return '<div>' +
+                            '<span class="user-name">' +
+                                '<span class="name">'+escape(item.name)+'</span>' +
+                            '</span>' +
+                        '</div>';
+                    }
+                },
+                load: function(query, callback) {
+                    if (!query.length) return callback();
+                    $.ajax({
+                        url: 'http://127.0.0.1:8000/api/search/postreceivers/' + encodeURIComponent(query),
+                        type: 'GET',
+                        error: function() {
+                            callback();
+                        },
+                        success: function(res) {
+                            callback(res.items);
+                        }
+                    });
+                },
+                onInitialize: function() {
+                    this.setValue(this.options[0]["identifier"])
+                },
+                onItemAdd: function(value, $item) {
+                    var type = this.options[value]["type"];
+                    $item.attr('data-type', type);
+                },
             });
         }
     }
