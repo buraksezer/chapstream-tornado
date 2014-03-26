@@ -11,12 +11,12 @@ ChapStreamDirectives.directive('sendPost', function($http) {
             elem.bind('click', function (e) {
                 var receiver_groups = [];
                 var receiver_users = [];
-                var params = {'mystream': 0};
+                var params = {'mystream'key: "value",  0};
                 $(".selectize-input").find(".item").each(function() {
                     var type = $(this).data("type");
                     var value = $(this).data("value");
                     if (typeof type === 'undefined' && value === 0) {
-                        var params = {'mystream': 1};
+                        params['mystream'] = 1;
                     }
                     if (type === 'user') {
                         receiver_users.push(value);
@@ -86,6 +86,7 @@ ChapStreamDirectives.directive('selectReceivers', function() {
                 'name': 'My Stream'
             };
             var $select = $('#post-receivers').selectize({
+                plugins: ['remove_button'],
                 valueField: 'identifier',
                 labelField: 'name',
                 searchField: 'name',

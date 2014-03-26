@@ -44,6 +44,7 @@ class PostHandler(CsRequestHandler):
         }
         # receiver_users argument contains user names that are seperated with comma
         receiver_users = self.get_argument("receiver_users", None)
+        mystream = self.get_argument("mystream")
         if receiver_users:
             receiver_users = [user for user in receiver_users.split(",")]
 
@@ -66,7 +67,13 @@ class PostHandler(CsRequestHandler):
             # Send all changes in a transaction
             self.session.commit()
 
-        post_timeline(post, receiver_groups=receiver_groups)
+        if mystream == 0:
+            post_timeline(post, receiver_groups=receiver_groups)
+            # TODO: push_notification_about_mention_for_receiver_users
+        else:
+            post_timeline(post, receiver_users=receiver_users,
+                          receiver_groups=receiver_groups)
+
 
     @tornado.web.authenticated
     @decorators.api_response

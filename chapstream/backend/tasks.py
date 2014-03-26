@@ -46,10 +46,12 @@ def push_to_timeline(user, post):
 
 # TODO: Add retry
 @kuyruk.task
-def post_timeline(post, receiver_groups=None):
+def post_timeline(post, receiver_users=None, receiver_groups=None):
     # Generate a Redis timeline post id
     post["rid"] = redis_conn.incr(config.POST_RID_HEAD_KEY)
 
+    # If the owner sends a post to a group, he is already member of the group
+    # pushing is not necessary in that case.
     if not receiver_groups:
         owner = User.get(post['user_id'])
         push_to_timeline(owner, post)
@@ -76,6 +78,10 @@ def post_timeline(post, receiver_groups=None):
             if group_receiver:
                 continue
 
+        # if receiver_users is not None, we must send a realtime message to the user
+        # about the post
+        if receiver_users and not relation.user.name in receiver_users:
+            continue
         push_to_timeline(relation.user, post)
 
 
