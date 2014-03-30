@@ -17,8 +17,8 @@ class Comment(Base):
     body = Column(UnicodeText, nullable=True)
     created_at = Column(DateTime, default=func.current_timestamp())
     updated_at = Column(DateTime, onupdate=func.current_timestamp())
-    user_id = Column(Integer, ForeignKey(User.id, ondelete='CASCADE'))
-    post_id = Column(Integer, ForeignKey(Post.id, ondelete='CASCADE'))
+    user_id = Column(BigInteger, ForeignKey(User.id, ondelete='CASCADE'))
+    post_id = Column(BigInteger, ForeignKey(Post.id, ondelete='CASCADE'))
 
     def __repr__(self):
         return "<Comment(id: '%s', user_id: '%s', post_id: '%s')>" % \

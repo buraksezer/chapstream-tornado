@@ -1,6 +1,5 @@
 from sqlalchemy import func
-from sqlalchemy.dialects.postgresql import ARRAY
-from sqlalchemy import Column, Integer, String, \
+from sqlalchemy import Column, Integer, \
     DateTime, Boolean, UnicodeText, ForeignKey, \
     Sequence, BigInteger
 from sqlalchemy.orm import relationship
@@ -18,7 +17,7 @@ class Post(Base):
     is_draft = Column(Boolean, default=False)
     created_at = Column(DateTime, default=func.current_timestamp())
     updated_at = Column(DateTime, onupdate=func.current_timestamp())
-    user_id = Column(Integer, ForeignKey(User.id, ondelete='CASCADE'))
+    user_id = Column(BigInteger, ForeignKey(User.id, ondelete='CASCADE'))
     comments = relationship('Comment',
                             backref='post',
                             cascade="all, delete",

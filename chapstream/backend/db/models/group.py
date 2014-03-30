@@ -10,9 +10,9 @@ from chapstream.backend.db.orm import TSVector
 group_posts = Table(
     "group_posts",
     Base.metadata,
-    Column("gp_group", Integer, ForeignKey("groups.id",
+    Column("gp_group", BigInteger, ForeignKey("groups.id",
                                            ondelete="CASCADE")),
-    Column("gp_post", Integer, ForeignKey("posts.id",
+    Column("gp_post", BigInteger, ForeignKey("posts.id",
                                           ondelete="CASCADE")),
 )
 

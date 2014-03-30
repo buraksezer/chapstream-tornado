@@ -8,7 +8,6 @@ from sqlalchemy.orm import relationship
 
 from chapstream.backend.db.orm import Base
 
-
 class User(Base):
     __tablename__ = 'users'
 

@@ -15,7 +15,7 @@ class Notification(Base):
         'seq_notification_id', start=1, increment=1), primary_key=True)
     message = Column(UnicodeJSONType)
     is_read = Column(Boolean, default=False)
-    user_id = Column(Integer, ForeignKey(User.id, ondelete='CASCADE'))
+    user_id = Column(BigInteger, ForeignKey(User.id, ondelete='CASCADE'))
     created_at = Column(DateTime, default=func.current_timestamp())
 
     def __repr__(self):

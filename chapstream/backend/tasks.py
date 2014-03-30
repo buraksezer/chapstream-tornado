@@ -177,8 +177,9 @@ def push_notification(user_ids, message):
         notification = Notification(message=message,
                                     user_id=user_id)
         session.add(notification)
-        session.commit()
+    session.commit()
 
+    for user_id in user_ids:
         try:
             channel = helpers.user_channel(user_id)
             message = json.dumps(message)

@@ -11,7 +11,7 @@ ChapStreamDirectives.directive('sendPost', function($http) {
             elem.bind('click', function (e) {
                 var receiver_groups = [];
                 var receiver_users = [];
-                var params = {'mystream'key: "value",  0};
+                var params = {'mystream': 0};
                 $(".selectize-input").find(".item").each(function() {
                     var type = $(this).data("type");
                     var value = $(this).data("value");
@@ -36,7 +36,7 @@ ChapStreamDirectives.directive('sendPost', function($http) {
                     url += "?"+ $.param(params);
                 }
                 scope.inProgress = true;
-                var form = $("#post-form")
+                var form = $("#post-form");
                 var post = form.val().trim();
                 $http.post(url, {body: post}).success(
                     function(data, status) {

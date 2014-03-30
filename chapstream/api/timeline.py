@@ -14,7 +14,7 @@ from chapstream.backend.db.models.post import Post
 from chapstream.backend.db.models.user import User
 from chapstream.backend.db.models.group import Group
 from chapstream.backend.tasks import post_timeline, \
-    delete_post_from_timeline, push_like
+    delete_post_from_timeline, push_like, push_notification
 from chapstream.config import TIMELINE_CHUNK_SIZE
 
 logger = logging.getLogger(__name__)
@@ -42,11 +42,6 @@ class PostHandler(CsRequestHandler):
             'name': self.current_user.name,
             'fullname': self.current_user.fullname
         }
-        # receiver_users argument contains user names that are seperated with comma
-        receiver_users = self.get_argument("receiver_users", None)
-        mystream = self.get_argument("mystream")
-        if receiver_users:
-            receiver_users = [user for user in receiver_users.split(",")]
 
         receiver_groups = self.get_argument("receiver_groups", None)
         # TODO: Check subscription status
@@ -67,9 +62,32 @@ class PostHandler(CsRequestHandler):
             # Send all changes in a transaction
             self.session.commit()
 
-        if mystream == 0:
+        # receiver_users argument contains user names that are seperated with comma
+        receiver_users = self.get_argument("receiver_users", None)
+        mystream = self.get_argument("mystream", 0)
+        try:
+            mystream = int(mystream)
+        except ValueError:
+            mystream = 0
+
+        if int(mystream) == 1:
             post_timeline(post, receiver_groups=receiver_groups)
-            # TODO: push_notification_about_mention_for_receiver_users
+            if receiver_users:
+                receiver_users = [user for user in receiver_users.split(",")]
+                # TODO: We need a function for getting user's screen name
+                message = {
+                    "body": "%s mentioned you on the timeline." %
+                            self.current_user.name,
+                    "post_id": post["post_id"],
+                    "user_name": self.current_user.name
+                }
+                user_ids = []
+                for name in receiver_users:
+                    (user_id,) = self.session.query(User).with_entities(User.id).\
+                        filter_by(name=name).first()
+                    if not user_id in user_ids:
+                        user_ids.append(user_id)
+                push_notification(user_ids, message)
         else:
             post_timeline(post, receiver_users=receiver_users,
                           receiver_groups=receiver_groups)
