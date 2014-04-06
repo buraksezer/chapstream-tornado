@@ -43,10 +43,11 @@ ChapStreamDirectives.directive('sendPost', function($http) {
                         if (status === 200){
                             form.val('');
                             form.trigger('autosize.destroy');
-                            /* This should be a constant value */
+                            form.trigger('focusout');
                             scope.$parent.restCharCount = 2000;
                             scope.restCharCount = 2000;
-                            form.trigger('focusout');
+                            $("#chapstream-timeline form .receivers").css('display', 'none');
+                            $('.post-form-control').css('display', 'none');
                         }
                     }
                 );
@@ -59,20 +60,21 @@ ChapStreamDirectives.directive('autosize', function() {
     return {
         link: function(scope, elem, element) {
             elem.bind('focusin', function(e) {
-                $("#post-form").autosize({className: 'post-box', append: "\n\n\n"});
+                $("#post-form").autosize({className: 'post-box', append: "\n"});
                 scope.placeholder = $("#post-form").attr("placeholder");
                 $("#post-form").attr("placeholder", "");
                 $('.post-form-control').css('display', 'block');
                 $("#chapstream-timeline form .receivers").css('display', 'block');
             });
-            elem.bind('focusout', function(e) {
-                /*if (scope.restCharCount === 2000) {
+            /*elem.bind('focusout', function(e) {
+                console.log(e);
+                if (scope.restCharCount === 2000) {
                     $('#post-form').trigger('autosize.destroy');
                     $("#post-form").attr('placeholder', scope.placeholder);
                     $('.post-form-control').css('display', 'none');
                     $("#chapstream-timeline form .receivers").css('display', 'none');
-                }*/
-            });
+                }
+            });*/
         }
     }
 });
@@ -153,10 +155,22 @@ ChapStreamDirectives.directive('catchNewPost', function($http) {
                 if (typeof(scope.user) != 'undefined' && scope.user.name != data.name) {
                     return;
                 }
-                scope.safeApply(function() {
-                    data.is_realtime = "realtime-post";
-                    scope.$parent.posts.unshift(data);
-                });
+                if (scope.currentUser != data.name) {
+                    scope.safeApply(function() {
+                        if (typeof(scope.$parent.new_posts) === 'undefined') {
+                            scope.$parent.new_posts = [data];
+                        } else if (scope.$parent.new_posts.length === 0) {
+                            scope.$parent.new_posts = [data];
+                        } else {
+                            scope.$parent.new_posts.unshift(data);
+                        }
+                    });
+                    $("#new-post").slideDown(100);
+                } else {
+                    scope.safeApply(function() {
+                        scope.$parent.posts.unshift(data);
+                    });
+                }
             });
         }
     }
@@ -166,10 +180,15 @@ ChapStreamDirectives.directive('releaseNewPosts', function($http) {
     return {
         link: function(scope, elem, element) {
             elem.bind('click', function(e, data) {
-                $(".post").removeClass("realtime-post");
                 scope.safeApply(function() {
-                    scope.new_post_count = false;
-                })
+                    for (var i=0; i<scope.new_post_count; i++) {
+                        scope.posts.unshift(scope.new_posts[i]);
+                    }
+                    scope.$parent.$parent.new_posts = [];
+                    $("#new-post").slideUp(100, function() {
+                        scope.new_post_count = false;
+                    });
+                });
             });
         }
     }
@@ -179,15 +198,29 @@ ChapStreamDirectives.directive('countNewPost', function($http) {
     return {
         link: function(scope, elem, element) {
             scope.new_post_count = 0;
-            elem.bind('new_post_event', function(e) {
-                scope.safeApply(function() {
-                    scope.new_post_count += 1;
-                });
+            elem.bind('new_post_event', function(e, data) {
+                if (scope.currentUser != data.name) {
+                    scope.safeApply(function() {
+                        scope.new_post_count += 1;
+                    });
+                }
             });
         }
     }
 });
 
+ChapStreamDirectives.directive('postCancel', function() {
+    return {
+        link: function(scope, elem, element) {
+            elem.bind('click', function(e) {
+                $('#post-form').trigger('autosize.destroy');
+                $("#post-form").attr('placeholder', scope.placeholder);
+                $('.post-form-control').css('display', 'none');
+                $("#chapstream-timeline form .receivers").css('display', 'none');
+            });
+        }
+    }
+});
 
 ChapStreamDirectives.directive('calcFromNow', function($timeout) {
     return {

@@ -2,11 +2,12 @@ html,
 body {
   height: 100%;
   font-family: 'Open Sans', sans-serif !important;
-  background: #fafafa;
+  background: #F7F7F7;
   color: #333333;
 }
 
 #new-post {
+    display: none;
     font-size: 13px;
     padding: 4px 10px 4px 10px;
     min-height: 20px;
@@ -19,24 +20,18 @@ body {
     box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
 }
 
-#new-post .fa-angle-double-right{
-    font-size: 30px;
-    color: #7AB364;
-    font-weight: bold;
-}
-
 #new-post .new-post-message {
-    margin-left: 20px;
-    margin-top: -24px;
+    margin-top: 4px;
+    font-weight: bold;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
 }
 
 #new-post .new-post-by {
     font-weight: bold;
 }
 
-.realtime-post {
-    display: none;
-}
 
 #chapstream-container {
     padding-top: 60px;

@@ -29,6 +29,8 @@ def push_to_timeline(user, post):
         timeline = helpers.user_timeline(user.id)
         rid = str(post["rid"])
         post["type"] = config.REALTIME_POST
+        post["users_liked"] = {"users": [], "count": 0, "liked": False}
+        post["comments"] = {"comments": [], "count": 0}
         post = json.dumps(post)
         # Push user's timeline the current post
         redis_conn.rpush(timeline, post)
