@@ -6,6 +6,10 @@ body {
   color: #333333;
 }
 
+.navbar-right .fa {
+    font-size: 19px;
+}
+
 #new-post {
     display: none;
     font-size: 13px;
@@ -67,6 +71,15 @@ textarea {
     display: none;
 }
 
+.empty-timeline {
+    text-align: center;
+    font-size: 20px;
+    padding: 10px;
+}
+
+.empty-timeline .fa-smile-o {
+    font-size: 50px;
+}
 .post-form-control {
     padding-bottom: 10px;
 }
@@ -137,6 +150,22 @@ textarea {
     height: 50px;
 }
 
+.post-metadata .control {
+    display: none;
+}
+
+.post-metadata .control i {
+    color: #B6B6B6;
+}
+
+.post-metadata .control .dropdown-menu {
+    min-width: 120px !important;
+}
+
+.post-metadata .control i:hover {
+    color: #333333;
+}
+
 .post-metadata .createdat {
     font-weight: lighter;
     font-size: 10px;
@@ -200,7 +229,11 @@ textarea {
 
 .post-social {
     font-size: 13px;
-    padding: 0px 10px 10px 10px;
+    padding: 0px 10px 0px 10px;
+}
+
+.comments {
+    margin-bottom: 5px;
 }
 
 .comment {
@@ -266,10 +299,8 @@ textarea {
 
 /* Like related styles */
 .users-liked {
-    margin-top: 5px;
     margin-bottom: 5px;
 }
-
 
 .user-liked-item {
     color: #BE2A38;

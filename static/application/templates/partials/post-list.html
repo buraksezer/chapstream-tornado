@@ -1,5 +1,14 @@
 <div id="posts" catch-new-post>
-    <div class="post" ng-repeat="post in posts">
+    <div ng-if='posts.length == 0' class='empty-timeline'>
+        <i class="fa fa-smile-o"></i>
+        <div ng-if="user.name == currentUser">
+            Nothing to show! You should add some friends or write something!
+        </div>
+        <div ng-if="user.name != currentUser">
+            Nothing to show!
+        </div>
+    </div>
+    <div class="post" ng-repeat="post in posts" post-events>
         <div class='user-image'>
             <img src='https://en.gravatar.com/userimage/1424675/f67ae3a96102d9db90315f67b6515613.jpg'/>
         </div>
@@ -7,6 +16,15 @@
             <div class="post-metadata">
                 <span class="user">{{ post.name }}</span>
                 <span class="createdat" calc-from-now ts="{{ post.created_at }}">{{ calcTime }}</span>
+                <span ng-if="post.name == currentUser" class="dropdown control pull-right">
+                    <a data-toggle="dropdown" href="#">
+                        <i class="fa fa-angle-down"></i>
+                    </a>
+                    <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
+                        <li><a href="#" edit-comment>Edit</a></li>
+                        <li><a href="#" delete-comment>Delete</a></li>
+                    </ul>
+                </span>
             </div>
             <div class="post-content">
                 {{ post.body }}

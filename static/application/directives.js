@@ -242,6 +242,20 @@ ChapStreamDirectives.directive('calcFromNow', function($timeout) {
     }
 });
 
+ChapStreamDirectives.directive('postEvents', function($timeout) {
+    return {
+        link: function(scope, element, attrs) {
+            var post_control_el = $(element).find('.post-metadata .control');
+            element.on('mouseenter', function() {
+                $(element).find('.post-metadata .control').css('display', 'block');
+            });
+            element.on('mouseleave', function() {
+                $(element).find('.post-metadata .control').css('display', 'none');
+            });
+        }
+    }
+});
+
 ChapStreamDirectives.directive('relationshipStatus', function($http, $routeParams) {
     return {
         link: function(scope, element, attrs) {
