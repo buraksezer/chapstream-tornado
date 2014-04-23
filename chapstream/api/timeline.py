@@ -14,7 +14,8 @@ from chapstream.backend.db.models.post import Post
 from chapstream.backend.db.models.user import User
 from chapstream.backend.db.models.group import Group
 from chapstream.backend.tasks import post_timeline, \
-    delete_post_from_timeline, push_like, push_notification
+    delete_post_from_timeline, push_like, push_notification, \
+    update_post_on_timelines
 from chapstream.config import TIMELINE_CHUNK_SIZE
 
 logger = logging.getLogger(__name__)
@@ -113,6 +114,27 @@ class PostHandler(CsRequestHandler):
             if self.redis_conn.hget(key, str(self.current_user.id)):
                 delete_post_from_timeline(post_rid)
 
+    @tornado.web.authenticated
+    @decorators.api_response
+    def put(self, post_rid, post_id):
+        post = self.session.query(Post).filter_by(id=post_id).first()
+        if not post:
+            return process_response(status=config.API_FAIL,
+                                    message="Post:%s could not be found."
+                                            % post_id)
+        data = json.loads(self.request.body)
+        body = data["body"].encode('UTF-8')
+
+        # Update the body on the RDBMS
+        post.body = body
+        self.session.commit()
+
+        # Change the post on the user timelines
+        if post_rid:
+            key = helpers.post_rid_key(post_rid)
+            if self.redis_conn.hget(key, str(self.current_user.id)):
+                update_post_on_timelines(post_rid, body)
+
 
 class TimelineLoader(CsRequestHandler):
     @tornado.web.authenticated
@@ -121,30 +143,42 @@ class TimelineLoader(CsRequestHandler):
         """
         Simply, read user's timeline on redis. Don't hit hard drive.
         """
+        limit_rid = self.get_argument('limit_rid', default=None)
         timeline = helpers.user_timeline(self.current_user.id)
-        length = self.redis_conn.llen(timeline)
-        offset = length - TIMELINE_CHUNK_SIZE
-        posts = self.redis_conn.lrange(timeline, offset, length)
-        posts.reverse()
+        # Fetch all of the posts.
+        posts = self.redis_conn.lrange(timeline, 0,
+                                       config.TIMELINE_MAX_POST_COUNT)
+
+        # Convert all of the posts because we need rid value for the per item.
+        posts = [json.loads(posts[index]) for index in xrange(0, len(posts))]
+
+        # Sort the posts in reverse order by rid values.
+        posts = sorted(posts, key=lambda item: item['rid'], reverse=True)
 
         # We process all items of the list because
         # redis returns a raw string instead of a python object.
-        for index in xrange(0, len(posts)):
-            post = posts[index]
-            post = json.loads(post)
+        counter = 0
+        arranged_posts = []
+        for post in posts:
+            # Break the loop if reached the max chunk size.
+            if counter == config.TIMELINE_CHUNK_SIZE:
+                break
+            # Don't add already showed posts
+            if limit_rid is not None and limit_rid < post['rid']:
+                continue
             # Aggregate like votes
             users_liked = get_post_like(post["post_id"],
                                         self.redis_conn,
                                         self.current_user,
                                         self.session)
             post["users_liked"] = users_liked
-
             # Aggregate comments
             comments = get_comment_summary(post["post_id"], self.redis_conn)
             post["comments"] = comments
+            arranged_posts.append(post)
+            counter += 1
 
-            posts[index] = post
-        posts = {"posts": posts}
+        posts = {"posts": arranged_posts}
         return process_response(data=posts)
 
 

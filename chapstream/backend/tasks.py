@@ -254,3 +254,31 @@ def push_like(post_id, user_like_id):
         except redis.ConnectionError as err:
             logger.error('Connection error: %s', err)
             # TODO: Handle failed tasks
+
+
+@kuyruk.task
+def update_post_on_timelines(post_rid, body):
+    '''
+    Updates given post on the user's timeline
+    '''
+
+    key = helpers.post_rid_key(post_rid)
+    user_ids = redis_conn.hgetall(key)
+    for user_id in user_ids:
+        user_timeline = helpers.user_timeline(user_id)
+        posts = redis_conn.lrange(user_timeline, 0,
+                                  config.TIMELINE_MAX_POST_COUNT)
+        for post in posts:
+            post_json = json.loads(post)
+            if str(post_json["rid"]) == post_rid:
+                if not redis_conn.lrem(user_timeline, post):
+                    logger.warning("POST_RID:%s could not be found or removed for user:%s",
+                                   post_rid, user_id)
+                    # TODO: Warn the user on frontend about the issue.
+                else:
+                    post_json['body'] = body
+                    post = json.dumps(post_json)
+                    if not redis_conn.rpush(user_timeline, post):
+                        logger.warning("POST_RID:%s could not be updated for user:%s",
+                                       post_rid, user_id)
+                        # TODO: Warn the user on frontend about the issue.
