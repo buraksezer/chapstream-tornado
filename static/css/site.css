@@ -171,6 +171,21 @@ textarea {
     font-size: 10px;
 }
 
+.post-edit-box {
+    padding: 0 11px 0 11px;
+}
+
+.post-edit-form-control {
+    padding-top: 5px;
+}
+
+.post-edit-cancel {
+line-height: 30px;
+margin-left: 10px;
+font-weight: lighter;
+font-size: 12px;
+}
+
 .post-form-control {
     display: none;
 }

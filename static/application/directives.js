@@ -135,6 +135,7 @@ ChapStreamDirectives.directive('countChar', function($http) {
             scope.restCharCount = 2000;
             // Use angularjs for triggering events.
             $(element).bind("keypress keyup keydown paste", function(event) {
+                // TODO: rename commentContent
                 if (typeof scope.commentContent == 'undefined') return;
                 if (scope.restCharCount <= 0) {
                     event.preventDefault();
@@ -255,6 +256,53 @@ ChapStreamDirectives.directive('postEvents', function($timeout) {
         }
     }
 });
+
+
+ChapStreamDirectives.directive('postEdit', function($http, $compile) {
+    return {
+        link: function(scope, element, attr) {
+            element.bind('click', function(e, data) {
+                var template = '<div class="post-edit-box"> \
+                    <form role="form">\
+                        <textarea class="post-form form-control" rows="1" count-char ng-model="commentContent"></textarea> \
+                        <div class="post-edit-form-control"> \
+                            <a class="post-edit-cancel pull-right" href="#" post-edit-cancel>Cancel</a> \
+                            <button type="submit" class="post-edit-done pull-right btn btn-primary btn-xs" done-post-edit>Done</button> \
+                            <span class="post-char-count pull-right">{{ restCharCount }}</span> \
+                        </div> \
+                    </form> \
+                </div>';
+                scope.safeApply(function() {
+                    scope.commentContent = scope.post.body;
+                    var post_edit_form = $(element).closest('.post').find(".post-edit-form");
+                    $(element).closest('.post').find('.post-content').hide();
+                    post_edit_form.html(template).show();
+                    $compile(post_edit_form.contents())(scope);
+                });
+            })
+        }
+    }
+});
+
+ChapStreamDirectives.directive('donePostEdit', function($http) {
+    return {
+        link: function(scope, element, attr) {
+            element.bind('click', function(e, data) {
+                var post_rid = scope.post.rid;
+                var post_id = scope.post.post_id;
+                $http.put('/api/timeline/post/'+post_rid+'/'+post_id, {body: scope.commentContent}).success(
+                    function(data, status) {
+                        scope.post.body = scope.commentContent;
+                        var post = $(element).closest('.post');
+                        post.find('.post-edit-box').hide();
+                        post.find('.post-content').show();
+                    }
+                );
+            });
+        }
+    };
+});
+
 
 ChapStreamDirectives.directive('relationshipStatus', function($http, $routeParams) {
     return {
