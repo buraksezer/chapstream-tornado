@@ -56,3 +56,5 @@ app.run(function($rootScope, InitService) {
         }
     };
 });
+
+var ChapStreamDirectives = angular.module('ChapStreamDirectives', []);
