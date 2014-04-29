@@ -269,3 +269,24 @@ ChapStreamDirectives.directive('donePostEdit', function($http) {
         }
     };
 });
+
+
+ChapStreamDirectives.directive('deletePost', function($http) {
+    return {
+        link: function(scope, elem, element) {
+            // TODO: Needs a confirm dialog.
+            elem.bind('click', function(e, data) {
+                $http.delete('/api/timeline/post/'+scope.post.rid+'/'+scope.post.post_id).success(
+                    function(data, status) {
+                        for (var i=0; i<scope.posts.length; i++) {
+                            if (scope.post.post_id === scope.posts[i].post_id) {
+                                scope.posts.splice(i, 1);
+                                break;
+                            }
+                        }
+                    }
+                );
+            });
+        }
+    }
+});

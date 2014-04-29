@@ -48,8 +48,8 @@ API_URLS = [
     (r"/api/group", GroupHandler),
     (r"/api/group/(?P<group_id>[^\/]+)", GroupHandler),
     (r"/api/timeline/load-timeline", TimelineLoader),
-    (r"/api/timeline/post", PostHandler),
-    (r"/api/timeline/post/(?P<post_rid>[^\/]+)/(?P<post_id>[^\/]+)", PostHandler),
+    (r"/api/timeline/post", PostHandler),  # Post sending
+    (r"/api/timeline/post/(?P<post_rid>[^\/]+)/(?P<post_id>[^\/]+)", PostHandler),  # Delete
     (r"/api/user/relationship/(?P<username>[^\/]+)", RelationshipStatusHandler),
     (r"/api/user/subscribe/(?P<username>[^\/]+)", SubscriptionHandler),
     (r"/api/user/unsubscribe/(?P<username>[^\/]+)", SubscriptionHandler),

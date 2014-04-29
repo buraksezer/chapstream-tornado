@@ -1,5 +1,7 @@
 'use strict';
 
+/* Comment related directives defined here */
+
 ChapStreamDirectives.directive('commentEvents', function($timeout) {
     return {
         link: function(scope, element, attrs) {
@@ -14,7 +16,6 @@ ChapStreamDirectives.directive('commentEvents', function($timeout) {
     }
 });
 
-/* Comment Related Directives */
 ChapStreamDirectives.directive('showCommentBox', function() {
     return {
         link: function(scope, elem, element) {
@@ -158,8 +159,20 @@ ChapStreamDirectives.directive('doneCommentEdit', function($http) {
 ChapStreamDirectives.directive('deleteComment', function($http) {
     return {
         link: function(scope, elem, element) {
+            // TODO: Needs a confirm dialog.
             elem.bind('click', function(e, data) {
-                console.log(scope);
+                $http.delete('/api/comment-delete/'+scope.comment.id).success(
+                    function(data, status) {
+                        // FIXME: comments.comments is not good practice
+                        console.log(scope.post.comments.comments);
+                        for (var i=0; i<scope.post.comments.comments.length; i++) {
+                            if (scope.comment.id === scope.post.comments.comments[i].id) {
+                                scope.post.comments.comments.splice(i, 1);
+                                break;
+                            }
+                        }
+                    }
+                );
             });
         }
     }
