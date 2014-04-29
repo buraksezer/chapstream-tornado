@@ -41,6 +41,7 @@ API_URLS = [
     (r"/api/comment/(?P<post_id>[^\/]+)", CommentHandler),
     (r"/api/comment/(?P<post_id>[^\/]+)/all", CommentHandler),
     (r"/api/comment-delete/(?P<comment_id>[^\/]+)", CommentHandler),
+    (r"/api/comment-update/(?P<comment_id>[^\/]+)", CommentHandler),
     (r"/api/like/(?P<post_id>[^\/]+)/all", LikeHandler),
     (r"/api/like/(?P<post_id>[^\/]+)", LikeHandler),
     (r"/api/group/subscribe/(?P<group_id>[^\/]+)", GroupSubscriptionHandler),

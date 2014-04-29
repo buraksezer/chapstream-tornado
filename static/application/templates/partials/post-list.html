@@ -65,7 +65,7 @@
                     <span ng-if="post.users_liked.users[0]"> liked.</span>
                 </div>
                 <div class="comments" ng-controller="CommentCtrl">
-                    <div class="comment" ng-repeat="comment in post.comments.comments">
+                    <div class="comment" ng-repeat="comment in post.comments.comments" comment-events>
                         <div ng-if="$index == 2 && post.comments.count > 3" class="more-comments">
                             <a href="#" more-comments>{{ post.comments.count - 3 }} more comments</a>
                         </div>
@@ -76,7 +76,7 @@
                             <span> - </span>
                             <a ng-if="comment.fullname" href="/{{ comment.name }}">{{ comment.fullname }}</a>
                             <a ng-if="!comment.fullname" href="/{{ comment.name }}">{{ comment.name }}</a>
-                            <span class="dropdown">
+                            <span class="dropdown comment-edit-dropdown" >
                                 <a data-toggle="dropdown" href="#" class="comment-edit" ng-if="comment.name == currentUser">
                                     <i class="fa fa-pencil"></i>
                                 </a>

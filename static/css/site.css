@@ -299,9 +299,23 @@ font-size: 12px;
     margin-bottom: 0;
 }
 
+.comment-edit-dropdown {
+    display: none;
+}
+
 .comment-edit {
     color: #333333;
     margin-left: 5px;
+}
+
+.comment-edit-box {
+    margin-left: 20px;
+    margin-top: -13px;
+}
+
+.comment-edit .fa-pencil {
+    color: #333333;
+    font-size: 11px;
 }
 
 .comment-content ul.dropdown-menu {

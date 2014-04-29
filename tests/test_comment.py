@@ -56,7 +56,7 @@ class CommentTest(CsBaseTestCase):
         with mock.patch.object(CsRequestHandler,
                                "get_secure_cookie") as m:
             m.return_value = user2.name
-            self.fetch("/api/comment-delete/%s" % comment_id,
+            self.fetch("/api/comment/%s" % comment_id,
                        method="DELETE")
 
         self.assertEqual(Comment.get(comment_id), None)

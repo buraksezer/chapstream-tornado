@@ -16,7 +16,6 @@ from chapstream.backend.tasks import push_comment
 logger = logging.getLogger(__name__)
 
 
-
 class CommentHandler(CsRequestHandler):
     @tornado.web.authenticated
     @decorators.api_response
@@ -94,7 +93,7 @@ class CommentHandler(CsRequestHandler):
         result = []
         path = os.path.basename(self.request.path)
         if path == "all":
-            for comment in post.comments:
+            for comment in post.comments.order_by('id asc').all():
                 created_at = calendar.timegm(comment.created_at.utctimetuple())
                 comment_dict = {
                     'id': comment.id,
@@ -140,6 +139,35 @@ class CommentHandler(CsRequestHandler):
         if not other_comments:
             userintr_hash = helpers.userintr_hash(self.current_user.id)
             self.redis_conn.hdel(userintr_hash, str(post_id))
+
+    @tornado.web.authenticated
+    @decorators.api_response
+    def put(self, comment_id):
+        comment = self.session.query(Comment).filter_by(
+            id=comment_id).first()
+        if not comment:
+            return process_response(status=config.API_FAIL,
+                                    message="Comment:%s could not be found."
+                                            % comment_id)
+
+        data = json.loads(self.request.body)
+        body = data["body"].encode('UTF8')
+        comment.body = body
+        self.session.commit()
+
+        comment_summary = helpers.comment_summary_key(comment.post_id)
+        items = self.redis_conn.lrange(comment_summary, 0, 3)
+        for index, item in enumerate(items):
+            comment_json = json.loads(item)
+            logger.info(type(comment_json["id"]))
+            logger.info(type(comment.id))
+            if comment_json["id"] == comment.id:
+                comment_json["body"] = body
+                cm = json.dumps(comment_json)
+                if not self.redis_conn.lset(comment_summary, index, cm):
+                    return process_response(status=config.API_FAIL,
+                                            message="Comment:%s could not be updated."
+                                                    % comment_id)
 
 
 class CollectCommentsHandler(CsRequestHandler):

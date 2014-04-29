@@ -246,7 +246,6 @@ ChapStreamDirectives.directive('calcFromNow', function($timeout) {
 ChapStreamDirectives.directive('postEvents', function($timeout) {
     return {
         link: function(scope, element, attrs) {
-            var post_control_el = $(element).find('.post-metadata .control');
             element.on('mouseenter', function() {
                 $(element).find('.post-metadata .control').css('display', 'block');
             });
@@ -257,6 +256,29 @@ ChapStreamDirectives.directive('postEvents', function($timeout) {
     }
 });
 
+ChapStreamDirectives.directive('commentEvents', function($timeout) {
+    return {
+        link: function(scope, element, attrs) {
+            var comment_edit_el = $(element).find('.comment-edit-dropdown');
+            element.on('mouseenter', function() {
+                $(comment_edit_el).css('display', 'inline-block');
+            });
+            element.on('mouseleave', function() {
+                $(comment_edit_el).css('display', 'none');
+            });
+        }
+    }
+});
+
+ChapStreamDirectives.directive('autosizePostEdit', function() {
+    return {
+        link: function(scope, elem, element) {
+            elem.bind('focusin', function(e) {
+                elem.autosize();
+            });
+        }
+    }
+});
 
 ChapStreamDirectives.directive('postEdit', function($http, $compile) {
     return {
@@ -264,7 +286,7 @@ ChapStreamDirectives.directive('postEdit', function($http, $compile) {
             element.bind('click', function(e, data) {
                 var template = '<div class="post-edit-box"> \
                     <form role="form">\
-                        <textarea class="post-form form-control" rows="1" count-char ng-model="commentContent"></textarea> \
+                        <textarea id="post-edit-{{ post.post_id }}" class="post-form form-control" rows="1" count-char ng-model="commentContent" autosize-post-edit></textarea> \
                         <div class="post-edit-form-control"> \
                             <a class="post-edit-cancel pull-right" href="#" post-edit-cancel>Cancel</a> \
                             <button type="submit" class="post-edit-done pull-right btn btn-primary btn-xs" done-post-edit>Done</button> \
@@ -279,10 +301,12 @@ ChapStreamDirectives.directive('postEdit', function($http, $compile) {
                     post_edit_form.html(template).show();
                     $compile(post_edit_form.contents())(scope);
                 });
+                $('#post-edit-'+scope.post.post_id).trigger('focusin');
             })
         }
     }
 });
+
 
 ChapStreamDirectives.directive('donePostEdit', function($http) {
     return {
@@ -424,14 +448,9 @@ ChapStreamDirectives.directive('autosizeComment', function() {
         link: function(scope, elem, element) {
             elem.bind('focusin', function(e) {
                 elem.autosize();
+                console.log('burda');
                 scope.placeholder = element.placeholder;
                 $(this).attr('placeholder','');
-            });
-            elem.bind('focusout', function(e) {
-                if (scope.restCharCount === 2000) {
-                    $('#post-form').trigger('autosize.destroy');
-                    $(this).attr('placeholder', scope.placeholder);
-                }
             });
         }
     }
@@ -514,10 +533,10 @@ ChapStreamDirectives.directive('editComment', function($http, $compile) {
         link: function(scope, elem, element) {
             var template = '<div class="comment-edit-box"> \
                     <form role="form">\
-                        <textarea class="comment-form form-control" rows="1" count-char ng-model="commentContent" autosize-comment></textarea> \
+                        <textarea id="comment-edit-{{ comment.id }}" class="comment-form form-control" rows="1" count-char ng-model="commentContent" autosize-comment></textarea> \
                         <div class="comment-form-control"> \
                             <a class="comment-cancel pull-right" href="#" comment-cancel>Cancel</a> \
-                            <button type="submit" class="pull-right btn btn-primary btn-xs" post-comment>Done</button> \
+                            <button type="submit" class="pull-right btn btn-primary btn-xs" done-comment-edit>Done</button> \
                             <span class="pull-left comment-char-count">{{ restCharCount }}</span> \
                         </div> \
                     </form> \
@@ -530,12 +549,28 @@ ChapStreamDirectives.directive('editComment', function($http, $compile) {
                     comment_item.find(".comment-content").hide();
                     comment_edit_form.html(template).show();
                     $compile(comment_edit_form.contents())(scope);
-                    comment_edit_form.find("textarea.comment-form").trigger("focusin");
-                    comment_edit_form.find("textarea.comment-form").trigger("keyup");
                 });
+                $('#comment-edit-'+scope.comment.id).trigger('focusin');
             });
         }
     }
+});
+
+ChapStreamDirectives.directive('doneCommentEdit', function($http) {
+    return {
+        link: function(scope, element, attr) {
+            element.bind('click', function(e, data) {
+                $http.put('/api/comment-update/'+scope.comment.id, {body: scope.commentContent}).success(
+                    function(data, status) {
+                        scope.comment.body = scope.commentContent;
+                        var comment = $(element).closest('.comment');
+                        comment.find('.comment-edit-box').hide();
+                        comment.find('.comment-content').show();
+                    }
+                );
+            });
+        }
+    };
 });
 
 ChapStreamDirectives.directive('deleteComment', function($http) {
