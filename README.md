@@ -8,4 +8,5 @@ Share your ideas and other interesting things with your friends!
 * SQLAlchemy,
 * Redis,
 * RabbitMQ,
+* AngularJS,
 * PostgreSQL.
